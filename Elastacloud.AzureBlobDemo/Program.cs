@@ -10,7 +10,7 @@ using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
 using Microsoft.SPOT.Net.NetworkInformation;
 using NetMf.CommonExtensions;
-using SecretLabs.NETMF.Hardware.NetduinoPlus;
+//using SecretLabs.NETMF.Hardware.NetduinoPlus;
 
 namespace Elastacloud.AzureBlobDemo
 {
@@ -41,12 +41,12 @@ namespace Elastacloud.AzureBlobDemo
                 _tableClient = new TableClient(AccountName, AccountKey);
                 _tableClient.CreateTable("netmfdata");
 
-                _onBoardButton = new InterruptPort(Pins.ONBOARD_SW1, true,
+                _onBoardButton = new InterruptPort(Cpu.Pin.GPIO_NONE, true,
                                                                 Port.ResistorMode.Disabled,
                                                                 Port.InterruptMode.InterruptEdgeHigh);
                 _onBoardButton.OnInterrupt += onBoardButton_OnInterrupt;
 
-                _analogInput = new AnalogInput(AnalogChannels.ANALOG_PIN_A0);
+                _analogInput = new AnalogInput(Cpu.AnalogChannel.ANALOG_NONE);
 
             }
             catch(Exception ex)
