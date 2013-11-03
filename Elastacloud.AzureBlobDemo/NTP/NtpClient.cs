@@ -33,7 +33,7 @@ using System.Net.Sockets;
 using System.Threading;
 using Microsoft.SPOT;
 
-namespace Elastacloud.AzureBlobDemo.NTP
+namespace netmfazurestorage.NTP
 {
 
     /// <summary>

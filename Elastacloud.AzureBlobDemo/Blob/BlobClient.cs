@@ -7,7 +7,7 @@ using ElzeKool;
 using Microsoft.SPOT;
 using NetMf.CommonExtensions;
 
-namespace Elastacloud.AzureBlobDemo.Blob
+namespace netmfazurestorage.Blob
 {
     internal class BlobClient
     {

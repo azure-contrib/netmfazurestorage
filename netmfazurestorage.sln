@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elastacloud.AzureBlobDemo", "Elastacloud.AzureBlobDemo\Elastacloud.AzureBlobDemo.csproj", "{1662719F-BF15-4E0A-B4FA-86F29D4B078D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "netmfazurestorage", "Elastacloud.AzureBlobDemo\netmfazurestorage.csproj", "{1662719F-BF15-4E0A-B4FA-86F29D4B078D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

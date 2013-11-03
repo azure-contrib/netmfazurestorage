@@ -6,7 +6,7 @@ using ElzeKool;
 using Microsoft.SPOT;
 using NetMf.CommonExtensions;
 
-namespace Elastacloud.AzureBlobDemo.Table
+namespace netmfazurestorage.Table
 {
     public class TableClient
     {

@@ -3,16 +3,16 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
-using Elastacloud.AzureBlobDemo.Blob;
-using Elastacloud.AzureBlobDemo.NTP;
-using Elastacloud.AzureBlobDemo.Table;
 using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
 using Microsoft.SPOT.Net.NetworkInformation;
 using NetMf.CommonExtensions;
 //using SecretLabs.NETMF.Hardware.NetduinoPlus;
+using netmfazurestorage.Blob;
+using netmfazurestorage.NTP;
+using netmfazurestorage.Table;
 
-namespace Elastacloud.AzureBlobDemo
+namespace netmfazurestorage
 {
     public class Program
     {

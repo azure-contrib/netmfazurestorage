@@ -1,4 +1,4 @@
-namespace Elastacloud.AzureBlobDemo.Queue
+namespace netmfazurestorage.Queue
 {
     public class QueueMessageWrapper
     {

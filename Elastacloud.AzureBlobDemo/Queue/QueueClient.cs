@@ -6,7 +6,7 @@ using ElzeKool;
 using Microsoft.SPOT;
 using NetMf.CommonExtensions;
 
-namespace Elastacloud.AzureBlobDemo.Queue
+namespace netmfazurestorage.Queue
 {
     public class QueueClient
     {
