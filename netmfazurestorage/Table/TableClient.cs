@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -102,6 +103,45 @@ namespace netmfazurestorage.Table
             SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, payload, contentLength);
         }
 
+        public void InsertTablEntity(string tablename, string partitionKey, string rowKey, DateTime timeStamp, System.Collections.ArrayList tableEntityProperties)
+        {
+            var timestamp = timeStamp.ToString("yyyy-MM-ddTHH:mm:ss.0000000Z");
+
+            string xml =
+                StringUtility.Format("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?><entry xml:base=\"http://{0}.table.core.windows.net/\" xmlns:d=\"http://schemas.microsoft.com/ado/2007/08/dataservices\" xmlns:m=\"http://schemas.microsoft.com/ado/2007/08/dataservices/metadata\" m:etag=\"W/&quot;datetime'2008-09-18T23%3A46%3A19.4277424Z'&quot;\" xmlns=\"http://www.w3.org/2005/Atom\">" +
+                "<id>http://{0}.table.core.windows.net/{5}(PartitionKey='{2}',RowKey='{3}')</id>" +
+                "<title/><updated>{1}</updated><author><name /></author>" +
+                "<link />" +
+                "<category term=\"{0}.Tables\" scheme=\"http://schemas.microsoft.com/ado/2007/08/dataservices/scheme\" />" +
+                "<content type=\"application/xml\"><m:properties><d:PartitionKey>{2}</d:PartitionKey><d:RowKey>{3}</d:RowKey>" +
+                "<d:Timestamp m:type=\"Edm.DateTime\">{1}</d:Timestamp>" +
+                "{4}" +
+                "</m:properties>" +
+                "</content>" +
+                "</entry>", AccountName, timestamp, partitionKey, rowKey, GetTableXml(tableEntityProperties), tablename);
+
+            int contentLength = 0;
+            byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
+            string header = CreateAuthorizationHeader(payload, ContentType, StringUtility.Format("/{0}/{1}", AccountName, tablename));
+            SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, payload, contentLength);
+        }
+
+        private string GetTableXml(ArrayList tableEntityProperties)
+        {
+            string result=string.Empty;
+            foreach (var tableEntityProperty in tableEntityProperties)
+            {
+                var prop = tableEntityProperty as TableEntityProperty;
+
+                if (prop != null)
+                {
+                    result += prop.ToString();
+                }
+            }
+
+            return result;
+        }
+
         #region Request Handling
 
         //DataServiceVersion: Set the value of this header to 1.0;NetFx.
@@ -203,6 +243,11 @@ namespace netmfazurestorage.Table
         }
 
         #endregion
+    }
+
+    public class TableEntityProperty
+    {
+
     }
 }
 
