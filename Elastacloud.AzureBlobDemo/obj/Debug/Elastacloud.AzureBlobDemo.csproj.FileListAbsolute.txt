@@ -1,2 +1,0 @@
-Z:\src\netmfazurestorage\Elastacloud.AzureBlobDemo\obj\Debug\Elastacloud.AzureBlobDemo.csprojResolveAssemblyReference.cache
-Z:\src\netmfazurestorage\Elastacloud.AzureBlobDemo\obj\Debug\TinyCLR_DebugReferences.cache
