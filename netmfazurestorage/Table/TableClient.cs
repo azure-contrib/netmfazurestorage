@@ -68,7 +68,7 @@ namespace netmfazurestorage.Table
                 + tableName +
             "')</id>" +
             "<title />" +
-            "<updated>2012-11-06T11:48:34.9840639+00:00</updated>" +
+            "<updated>" + InstanceDate.ToString("yyyy-MM-ddTHH:mm:ss.0000000Z") + "</updated>" +
             "<author><name/></author> " +
             "<content type=\"application/xml\"><m:properties><d:TableName>" + tableName + "</d:TableName></m:properties></content></entry>";
 
