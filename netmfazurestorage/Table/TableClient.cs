@@ -64,7 +64,7 @@ namespace netmfazurestorage.Table
             "<entry xmlns:d=\"http://schemas.microsoft.com/ado/2007/08/dataservices\"  " +
             "xmlns:m=\"http://schemas.microsoft.com/ado/2007/08/dataservices/metadata\" " +
             "xmlns=\"http://www.w3.org/2005/Atom\"> " +
-            "<id>http://myaccount.table.core.windows.net/Tables('"
+            "<id>http://" + AccountName + ".table.core.windows.net/Tables('"
                 + tableName +
             "')</id>" +
             "<title />" +
