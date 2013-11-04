@@ -75,7 +75,7 @@ namespace netmfazurestorage.Table
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
             string header = CreateAuthorizationHeader(payload, ContentType, "/netmf/Tables()");
-            SendWebRequest("http://netmf.table.core.windows.net/Tables()", header, payload, contentLength);
+            SendWebRequest("http://" + AccountName + ".table.core.windows.net/Tables()", header, payload, contentLength);
         }
 
         public void AddTableEntityForTemperature(string tablename, string partitionKey, string rowKey, DateTime timeStamp, double temperature, string country)
