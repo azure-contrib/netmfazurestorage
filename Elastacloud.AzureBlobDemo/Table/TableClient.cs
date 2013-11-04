@@ -5,6 +5,7 @@ using System.Text;
 using ElzeKool;
 using Microsoft.SPOT;
 using NetMf.CommonExtensions;
+using System.Collections;
 
 namespace Elastacloud.AzureBlobDemo.Table
 {
@@ -56,8 +57,38 @@ namespace Elastacloud.AzureBlobDemo.Table
 
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
-            string header = CreateAuthorizationHeader(payload, ContentType, "/netmf/Tables()");
-            SendWebRequest("http://netmf.table.core.windows.net/Tables()", header, payload, contentLength);
+            string header = CreateAuthorizationHeader(payload, ContentType, "/" + AccountName + "/Tables()");
+            SendWebRequest("http://" + AccountName + ".table.core.windows.net/Tables()", header, payload, contentLength);
+        }
+
+        public void InsertEntitiy(string tableName, string partitionKey, string rowKey, IDictionary values)
+        {
+            var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.0000000Z");
+
+            var sb = new System.Text.StringBuilder();
+            foreach (var key in values.Keys)
+            {
+                var value = values[key];
+                sb.Append("<d:"+ key + ">" + value + "</d:" + key + ">");
+            }
+
+            string xml =
+                StringUtility.Format("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?><entry xml:base=\"http://{0}.table.core.windows.net/\" xmlns:d=\"http://schemas.microsoft.com/ado/2007/08/dataservices\" xmlns:m=\"http://schemas.microsoft.com/ado/2007/08/dataservices/metadata\" m:etag=\"W/&quot;datetime'2008-09-18T23%3A46%3A19.4277424Z'&quot;\" xmlns=\"http://www.w3.org/2005/Atom\">" +
+                "<id>http://{0}.table.core.windows.net/{5}(PartitionKey='{2}',RowKey='{3}')</id>" +
+                "<title/><updated>{1}</updated><author><name /></author>" +
+                "<link />" +
+                "<category term=\"{0}.Tables\" scheme=\"http://schemas.microsoft.com/ado/2007/08/dataservices/scheme\" />" +
+                "<content type=\"application/xml\"><m:properties><d:PartitionKey>{2}</d:PartitionKey><d:RowKey>{3}</d:RowKey>" +
+                sb.ToString() + 
+                "</m:properties>" +
+                "</content>" +
+                "</entry>", AccountName, timestamp, partitionKey, rowKey, values, tableName);
+
+            int contentLength = 0;
+            byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
+            string header = CreateAuthorizationHeader(payload, ContentType, StringUtility.Format("/{0}/{1}", AccountName, tableName));
+            SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tableName), header, payload, contentLength);
+            
         }
 
         public void AddTableEntityForTemperature(string tablename, string partitionKey, string rowKey, DateTime timeStamp, double temperature, string country)

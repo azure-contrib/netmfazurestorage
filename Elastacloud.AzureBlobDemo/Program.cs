@@ -11,6 +11,7 @@ using Microsoft.SPOT.Hardware;
 using Microsoft.SPOT.Net.NetworkInformation;
 using NetMf.CommonExtensions;
 using SecretLabs.NETMF.Hardware.NetduinoPlus;
+using Elastacloud.AzureBlobDemo.Tests;
 
 namespace Elastacloud.AzureBlobDemo
 {
@@ -25,8 +26,18 @@ namespace Elastacloud.AzureBlobDemo
         private static object Padlock = new object();
         private static AnalogInput _analogInput;
 
+        public static void RunTests()
+        {
+            var tableTests = new TableTests("two10ra", "xxx");
+            tableTests.Run();
+        }
+
+
         public static void Main()
         {
+            RunTests();
+            return;
+
             //tidy up
             File.Delete("\\SD\\Data.csv");
 

@@ -30,6 +30,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>Elastacloud.AzureBlobDemo.Program</StartupObject>
+  </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
     <Compile Include="Blob\BlobClient.cs" />
@@ -46,17 +49,14 @@
     <Compile Include="StringUtilities\StringExtensions.cs" />
     <Compile Include="StringUtilities\StringUtility.cs" />
     <Compile Include="Table\TableClient.cs" />
+    <Compile Include="Tests\TableTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.SPOT.Hardware" />
     <Reference Include="Microsoft.SPOT.Native" />
     <Reference Include="Microsoft.SPOT.Net" />
-    <Reference Include="SecretLabs.NETMF.Hardware, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>libs\SecretLabs.NETMF.Hardware.dll</HintPath>
-    </Reference>
-    <Reference Include="SecretLabs.NETMF.Hardware.NetduinoPlus">
-      <HintPath>libs\SecretLabs.NETMF.Hardware.NetduinoPlus.dll</HintPath>
-    </Reference>
+    <Reference Include="SecretLabs.NETMF.Hardware, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL" />
+    <Reference Include="SecretLabs.NETMF.Hardware.NetduinoPlus, Version=4.2.2.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Http" />
     <Reference Include="System.IO" />
