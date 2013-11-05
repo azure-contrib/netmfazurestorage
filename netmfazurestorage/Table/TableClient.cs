@@ -6,6 +6,7 @@ using System.Text;
 using ElzeKool;
 using Microsoft.SPOT;
 using NetMf.CommonExtensions;
+using System.Collections;
 
 namespace netmfazurestorage.Table
 {
@@ -14,32 +15,14 @@ namespace netmfazurestorage.Table
         public static string AccountName;
         public static string AccountKey;
 
-        #region private members
-
-        private string _httpVerb = "POST";
-
-        #endregion
-
         #region constants
 
-        internal const string HttpVerbPut = "PUT";
-        internal const string HttpVerbDelete = "DELETE";
-        internal const string HttpVerbPost = "POST";
-        internal const string HttpVerbGet = "GET";
         internal const string VersionHeader = "2011-08-18";
         internal const string ContentType = "application/atom+xml";
 
         #endregion
 
         #region Properties
-
-        internal string TableName { get; set; }
-
-        internal string HttpVerb
-        {
-            get { return _httpVerb; }
-            set { _httpVerb = value; }
-        }
 
         internal DateTime InstanceDate { get; set; }
 
@@ -147,11 +130,11 @@ namespace netmfazurestorage.Table
         //DataServiceVersion: Set the value of this header to 1.0;NetFx.
         //MaxDataServiceVersion: Set the value of this header to 1.0;NetFx.
 
-        private HttpWebRequest PrepareRequest(string url, string authHeader, byte[] fileBytes = null, int contentLength = 0)
+        private HttpWebRequest PrepareRequest(string url, string authHeader, byte[] fileBytes = null, int contentLength = 0, string verb = "POST")
         {
             var uri = new Uri(url);
             var request = (HttpWebRequest)WebRequest.Create(uri);
-            request.Method = HttpVerb;
+            request.Method = verb;
             request.Headers.Add("x-ms-date", InstanceDate.ToString("R"));
             request.Headers.Add("DataServiceVersion", "1.0;NetFx");
             request.Headers.Add("MaxDataServiceVersion", "1.0;NetFx");
