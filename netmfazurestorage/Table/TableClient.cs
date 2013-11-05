@@ -86,7 +86,7 @@ namespace netmfazurestorage.Table
             SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, payload, contentLength);
         }
 
-        public void InsertTablEntity(string tablename, string partitionKey, string rowKey, DateTime timeStamp, System.Collections.ArrayList tableEntityProperties)
+        public void InsertTableEntity(string tablename, string partitionKey, string rowKey, DateTime timeStamp, System.Collections.ArrayList tableEntityProperties)
         {
             var timestamp = timeStamp.ToString("yyyy-MM-ddTHH:mm:ss.0000000Z");
 
@@ -226,11 +226,6 @@ namespace netmfazurestorage.Table
         }
 
         #endregion
-    }
-
-    public class TableEntityProperty
-    {
-
     }
 }
 

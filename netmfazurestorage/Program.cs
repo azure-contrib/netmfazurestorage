@@ -10,8 +10,7 @@ using NetMf.CommonExtensions;
 using netmfazurestorage.Blob;
 using netmfazurestorage.NTP;
 using netmfazurestorage.Table;
-using SecretLabs.NETMF.Hardware.NetduinoPlus;
-using Elastacloud.AzureBlobDemo.Tests;
+using netmfazurestorage.Tests;
 
 namespace netmfazurestorage
 {

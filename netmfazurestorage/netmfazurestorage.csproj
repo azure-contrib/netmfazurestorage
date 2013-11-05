@@ -31,7 +31,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>Elastacloud.AzureBlobDemo.Program</StartupObject>
+    <StartupObject>netmfazurestorage.Program</StartupObject>
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
@@ -49,6 +49,7 @@
     <Compile Include="StringUtilities\StringExtensions.cs" />
     <Compile Include="StringUtilities\StringUtility.cs" />
     <Compile Include="Table\TableClient.cs" />
+    <Compile Include="Table\TableEntityProperty.cs" />
     <Compile Include="Tests\TableTests.cs" />
   </ItemGroup>
   <ItemGroup>
