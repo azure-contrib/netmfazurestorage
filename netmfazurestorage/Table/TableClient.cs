@@ -14,6 +14,7 @@ namespace netmfazurestorage.Table
     {
         public static string AccountName;
         public static string AccountKey;
+        public static bool AttachFiddler;
 
         #region constants
 
@@ -143,7 +144,10 @@ namespace netmfazurestorage.Table
             request.Headers.Add("Date", InstanceDate.ToString("R"));
             request.Headers.Add("x-ms-version", VersionHeader);
             request.Headers.Add("Authorization", authHeader);
-            request.Proxy = new WebProxy("127.0.0.1", 8888);
+
+            if (AttachFiddler)
+                request.Proxy = new WebProxy("127.0.0.1", 8888);
+
             if (contentLength != 0)
             {
                 request.GetRequestStream().Write(fileBytes, 0, fileBytes.Length);
