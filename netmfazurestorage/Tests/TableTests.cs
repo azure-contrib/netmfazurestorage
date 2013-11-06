@@ -16,6 +16,7 @@ namespace netmfazurestorage.Tests
         {
             this.TestCreate();
             this.TestInsert();
+            this.TestInsertDouble();
         }
 
         private void TestCreate()
@@ -38,6 +39,31 @@ namespace netmfazurestorage.Tests
             tep.Name = "field2";
             tep.Value = "value2";
             tep.Type = "Edm.String";
+            values.Add(tep);
+
+            this.client.InsertTableEntity("netmftest", "1", Guid.NewGuid().ToString(), DateTime.Now, values);
+        }
+
+        public void TestInsertDouble()
+        {
+            var values = new System.Collections.ArrayList();
+            var tep = new TableEntityProperty();
+            tep.Name = "field1";
+            tep.Value = "value1";
+            tep.Type = "Edm.String";
+
+            values.Add(tep);
+
+            tep = new TableEntityProperty();
+            tep.Name = "field2";
+            tep.Value = "value2";
+            tep.Type = "Edm.String";
+            values.Add(tep);
+
+            tep = new TableEntityProperty();
+            tep.Name = "field3";
+            tep.Value = "5.0";
+            tep.Type = "Edm.Double";
             values.Add(tep);
 
             this.client.InsertTableEntity("netmftest", "1", Guid.NewGuid().ToString(), DateTime.Now, values);
