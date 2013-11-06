@@ -58,7 +58,7 @@ namespace netmfazurestorage.Table
 
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
-            string header = CreateAuthorizationHeader(payload, ContentType, "/netmf/Tables()");
+            string header = CreateAuthorizationHeader(payload, ContentType, "/" + AccountName + "/Tables()");
             SendWebRequest("http://" + AccountName + ".table.core.windows.net/Tables()", header, payload, contentLength);
         }
 
@@ -143,6 +143,7 @@ namespace netmfazurestorage.Table
             request.Headers.Add("Date", InstanceDate.ToString("R"));
             request.Headers.Add("x-ms-version", VersionHeader);
             request.Headers.Add("Authorization", authHeader);
+            request.Proxy = new WebProxy("127.0.0.1", 8888);
             if (contentLength != 0)
             {
                 request.GetRequestStream().Write(fileBytes, 0, fileBytes.Length);

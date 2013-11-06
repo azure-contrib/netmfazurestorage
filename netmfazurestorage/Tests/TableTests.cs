@@ -22,7 +22,6 @@ namespace netmfazurestorage.Tests
         {
             this.client.CreateTable("netmftest");
 
-
         }
 
         public void TestInsert()
