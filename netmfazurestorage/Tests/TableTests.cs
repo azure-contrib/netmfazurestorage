@@ -1,5 +1,6 @@
 using System;
 using netmfazurestorage.Table;
+using System.Collections;
 
 namespace netmfazurestorage.Tests
 {
@@ -17,6 +18,7 @@ namespace netmfazurestorage.Tests
             this.TestCreate();
             this.TestInsert();
             this.TestInsertDouble();
+            this.TestInsertExperimental();
         }
 
         private void TestCreate()
@@ -69,6 +71,19 @@ namespace netmfazurestorage.Tests
             this.client.InsertTableEntity("netmftest", "1", Guid.NewGuid().ToString(), DateTime.Now, values);
         }
 
+
+        public void TestInsertExperimental()
+        {
+            var values = new Hashtable();
+            values.Add("guidfield", Guid.NewGuid());
+            values.Add("int32field", 32);
+            values.Add("stringfield", "string");
+            //values.Add("datetimefield", DateTime.Now);
+            values.Add("doublefield", (double)123.22);
+            values.Add("int64field", (Int64)64);
+            values.Add("boolfield", true);
+            this.client.InsertTableEntity_Experimental("netmftest", "2", Guid.NewGuid().ToString(), DateTime.Now, values);
+        }
 
     }
 }
