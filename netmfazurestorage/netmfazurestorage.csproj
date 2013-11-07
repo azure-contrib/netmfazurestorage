@@ -50,6 +50,7 @@
     <Compile Include="StringUtilities\StringUtility.cs" />
     <Compile Include="Table\TableClient.cs" />
     <Compile Include="Table\TableEntityProperty.cs" />
+    <Compile Include="Tests\QueueTests.cs" />
     <Compile Include="Tests\TableTests.cs" />
   </ItemGroup>
   <ItemGroup>

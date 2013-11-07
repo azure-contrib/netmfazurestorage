@@ -27,6 +27,9 @@ namespace netmfazurestorage
 
         public static void RunTests()
         {
+            var queueTests = new QueueTests(AccountName, AccountKey);
+            queueTests.Run();
+
             var tableTests = new TableTests(AccountName, AccountKey);
             tableTests.Run();
         }

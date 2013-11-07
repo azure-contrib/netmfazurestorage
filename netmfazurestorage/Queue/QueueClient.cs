@@ -76,11 +76,15 @@ namespace netmfazurestorage.Queue
                 {
                     if (response.StatusCode == HttpStatusCode.Created)
                     {
-                        Debug.Print("Container or blob has been created!");
+                        Debug.Print("Queue has been created!");
                     }
                     if (response.StatusCode == HttpStatusCode.Accepted)
                     {
-                        Debug.Print("Container or blob action has been completed");
+                        Debug.Print("Queue action has been completed");
+                    }
+                    if (response.StatusCode == HttpStatusCode.Forbidden)
+                    {
+                        throw new WebException("Forbidden", null, WebExceptionStatus.ServerProtocolViolation, response);
                     }
 
                     using (var responseStream = response.GetResponseStream())
@@ -109,6 +113,7 @@ namespace netmfazurestorage.Queue
                 }
             }
 
+            Debug.Print(responseBody);
             return responseBody;
         }
 
@@ -126,6 +131,15 @@ namespace netmfazurestorage.Queue
             return "SharedKey " + AccountName + ":" + signature;
         }
 
+        public void CreateQueue(string queueName)
+        {
+            //PUT https://myaccount.queue.core.windows.net/myqueue HTTP/1.1
+            var url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}", AccountName, queueName);
+            string can = StringUtility.Format("/{0}/{1}", AccountName, queueName);
+            var auth = CreateAuthorizationHeader(can, "", 0, true, "PUT");
+            SendWebRequest(url, auth, null, 0, "PUT");
+        }
+
         public void CreateQueueMessage(string message)
         {
             // POST http://myaccount.queue.core.windows.net/netmfdata/messages?visibilitytimeout=<int-seconds>&messagettl=<int-seconds>
@@ -140,14 +154,14 @@ namespace netmfazurestorage.Queue
 
         }
 
-        public QueueMessageWrapper RetrieveQueueMessage()
+        public QueueMessageWrapper RetrieveQueueMessage(string queueName)
         {
 
             // GET http://myaccount.queue.core.windows.net/netmfdata/messages
 
-            string can = StringUtility.Format("/{0}/netmfdata/messages", AccountName);
+            string can = StringUtility.Format("/{0}/{1}/messages", AccountName, queueName);
             string auth = CreateAuthorizationHeader(can, "", 0, true);
-            string url = StringUtility.Format("http://{0}.queue.core.windows.net/netmfdata/messages", AccountName);
+            string url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}/messages", AccountName, queueName);
             var responseBody = SendWebRequest(url, auth);
 
             if (responseBody == null)
