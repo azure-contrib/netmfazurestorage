@@ -16,11 +16,17 @@ namespace netmfazurestorage.Tests
 
         public void Run()
         {
-            var testRun = Guid.NewGuid().ToString().Replace("-", "");
+            var testRun = Guid.NewGuid().ToString().Replace("-", "");//your tablename goes here!
             CreateQueue(testRun);
             CreateQueueMessage(testRun, "Skynet is READY");
             var message = RetrieveQueueMessage(testRun);
             DeleteQueueMessage(testRun, message.MessageId, message.PopReceipt);
+            DeleteQueue(testRun);
+        }
+
+        private void DeleteQueue(string queueName)
+        {
+            _queueClient.DeleteQueue(queueName);
         }
 
         private void DeleteQueueMessage(string queueName, string messageId, string popReceipt)

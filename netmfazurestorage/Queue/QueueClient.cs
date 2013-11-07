@@ -207,5 +207,14 @@ namespace netmfazurestorage.Queue
             SendWebRequest(url, auth, null, 0, "DELETE");
 
         }
+
+        public void DeleteQueue(string queueName)
+        {
+            //DELETE https://myaccount.queue.core.windows.net/myqueue HTTP/1.1
+            var url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}", AccountName, queueName);
+            string can = StringUtility.Format("/{0}/{1}", AccountName, queueName);
+            var auth = CreateAuthorizationHeader(can, "", 0, true, "DELETE");
+            SendWebRequest(url, auth, null, 0, "DELETE");
+        }
     }
 }
