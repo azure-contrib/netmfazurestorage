@@ -194,16 +194,16 @@ namespace netmfazurestorage.Queue
             }
         }
 
-        public void DeleteMessage(string messageId, string popReceipt)
+        public void DeleteMessage(string queueName, string messageId, string popReceipt)
         {
 
             // DELETE http://myaccount.queue.core.windows.net/myqueue/messages/messageid?popreceipt=string-value
-            string can = StringUtility.Format("/{0}/netmfdata/messages/{2}\npopreceipt:{1}", AccountName, popReceipt,
-                                              messageId);
+            string can = StringUtility.Format("/{0}/{3}/messages/{2}\npopreceipt:{1}", AccountName, popReceipt,
+                                              messageId, queueName);
             string auth = CreateAuthorizationHeader(can, "", 0, true, "DELETE");
             string url =
-                StringUtility.Format("http://{0}.queue.core.windows.net/netmfdata/messages/{2}?popreceipt={1}",
-                                     AccountName, popReceipt, messageId);
+                StringUtility.Format("http://{0}.queue.core.windows.net/{3}/messages/{2}?popreceipt={1}",
+                                     AccountName, popReceipt, messageId, queueName);
             SendWebRequest(url, auth, null, 0, "DELETE");
 
         }

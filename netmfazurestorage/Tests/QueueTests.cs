@@ -1,5 +1,6 @@
 using System;
 using Microsoft.SPOT;
+using NetMf.CommonExtensions;
 using netmfazurestorage.Queue;
 
 namespace netmfazurestorage.Tests
@@ -15,15 +16,24 @@ namespace netmfazurestorage.Tests
 
         public void Run()
         {
-            CreateQueue("netmfmessages");
-            CreateQueueMessage("netmfmessages", "Skynet is READY");
-            RetrieveQueueMessage("netmfmessages");
+            var testRun = Guid.NewGuid().ToString().Replace("-", "");
+            CreateQueue(testRun);
+            CreateQueueMessage(testRun, "Skynet is READY");
+            var message = RetrieveQueueMessage(testRun);
+            DeleteQueueMessage(testRun, message.MessageId, message.PopReceipt);
         }
 
-        private void RetrieveQueueMessage(string queueName)
+        private void DeleteQueueMessage(string queueName, string messageId, string popReceipt)
+        {
+            _queueClient.DeleteMessage(queueName, messageId, popReceipt);
+        }
+
+        private QueueMessageWrapper RetrieveQueueMessage(string queueName)
         {
             var message = _queueClient.RetrieveQueueMessage(queueName);
             Debug.Print(message.Message);
+
+            return message;
         }
 
         private void CreateQueue(string queueName)
