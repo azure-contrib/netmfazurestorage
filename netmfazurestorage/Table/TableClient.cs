@@ -171,6 +171,13 @@ namespace netmfazurestorage.Table
             return result;
         }
 
+        public string QueryTable(string tablename, string partitionKey, string rowKey)
+        {
+            var header = CreateAuthorizationHeader(null, ContentType, StringUtility.Format("/{0}/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey));
+            return SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey), header, null, 0, "GET");
+        
+        }
+
         #region Request Handling
 
         //DataServiceVersion: Set the value of this header to 1.0;NetFx.
@@ -200,9 +207,9 @@ namespace netmfazurestorage.Table
             return request;
         }
 
-        protected void SendWebRequest(string url, string authHeader, byte[] fileBytes = null, int contentLength = 0)
+        protected string SendWebRequest(string url, string authHeader, byte[] fileBytes = null, int contentLength = 0, string verb = "POST")
         {
-            HttpWebRequest request = PrepareRequest(url, authHeader, fileBytes, contentLength);
+            HttpWebRequest request = PrepareRequest(url, authHeader, fileBytes, contentLength, verb);
             try
             {
                 HttpWebResponse response;
@@ -215,7 +222,7 @@ namespace netmfazurestorage.Table
                     else
                     {
                         Debug.Print("Status was " + response.StatusCode);
-                        var ResponseBody = "";
+                        var responseBody = "";
                         using (var responseStream = response.GetResponseStream())
                         using (var reader = new StreamReader(responseStream))
                         {
@@ -225,10 +232,11 @@ namespace netmfazurestorage.Table
                             {
                                 reader.Read(bytes, 0, bytes.Length);
 
-                                ResponseBody = new string(bytes);
+                                responseBody = new string(bytes);
                             }
                         }
-                        Debug.Print(ResponseBody);
+                        Debug.Print(responseBody);
+                        return responseBody; 
                     }
                     //if (response.StatusCode == HttpStatusCode.Accepted)
                     //{
@@ -247,6 +255,7 @@ namespace netmfazurestorage.Table
                     Debug.Print("problem with signature!");
                 }
             }
+            return null;
         }
 
         #endregion

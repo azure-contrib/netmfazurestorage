@@ -1,6 +1,7 @@
 using System;
 using netmfazurestorage.Table;
 using System.Collections;
+using Microsoft.SPOT;
 
 namespace netmfazurestorage.Tests
 {
@@ -19,6 +20,7 @@ namespace netmfazurestorage.Tests
             this.TestInsert();
             this.TestInsertDouble();
             this.TestInsertExperimental();
+            this.QuerySingleEntity();
         }
 
         private void TestCreate()
@@ -78,12 +80,19 @@ namespace netmfazurestorage.Tests
             values.Add("guidfield", Guid.NewGuid());
             values.Add("int32field", 32);
             values.Add("stringfield", "string");
-            //values.Add("datetimefield", DateTime.Now);
+            //values.Add("datetimefield", DateTime.Now); // not sure why this is appearing as a null in the table
             values.Add("doublefield", (double)123.22);
             values.Add("int64field", (Int64)64);
             values.Add("boolfield", true);
             this.client.InsertTableEntity_Experimental("netmftest", "2", Guid.NewGuid().ToString(), DateTime.Now, values);
         }
 
+        public void QuerySingleEntity()
+        {
+            var output = this.client.QueryTable("netmftest", "2", "796440bd-95f6-0626-975b-764e6902844d");
+            Debug.Assert(null != output);
+        }
+
     }
+
 }
