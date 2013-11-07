@@ -140,16 +140,16 @@ namespace netmfazurestorage.Queue
             SendWebRequest(url, auth, null, 0, "PUT");
         }
 
-        public void CreateQueueMessage(string message)
+        public void CreateQueueMessage(string queueName, string message)
         {
             // POST http://myaccount.queue.core.windows.net/netmfdata/messages?visibilitytimeout=<int-seconds>&messagettl=<int-seconds>
             int length = 0;
             string messageXml = StringUtility.Format("<QueueMessage><MessageText>{0}</MessageText></QueueMessage>",
                                                      Convert.ToBase64String(Encoding.UTF8.GetBytes(message)));
             byte[] content = GetXmlBytesAndLength(messageXml, out length);
-            string can = StringUtility.Format("/{0}/netmfdata/messages", AccountName);
+            string can = StringUtility.Format("/{0}/{1}/messages", AccountName, queueName);
             string auth = CreateAuthorizationHeader(can, "", length, false, "POST");
-            string url = StringUtility.Format("http://{0}.queue.core.windows.net/netmfdata/messages", AccountName);
+            string url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}/messages", AccountName, queueName);
             SendWebRequest(url, auth, content, length, "POST");
 
         }

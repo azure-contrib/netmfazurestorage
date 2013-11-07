@@ -16,11 +16,17 @@ namespace netmfazurestorage.Tests
         public void Run()
         {
             CreateQueue("netmfmessages");
+            CreateQueueMessage("netmfmessages", "Skynet => READY");
         }
 
         private void CreateQueue(string queueName)
         {
             _queueClient.CreateQueue(queueName);
+        }
+
+        private void CreateQueueMessage(string queueName, string messageBody)
+        {
+            _queueClient.CreateQueueMessage(queueName, messageBody);
         }
     }
 }
