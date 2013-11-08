@@ -35,6 +35,12 @@ namespace netmfazurestorage.Queue
 
         #endregion
 
+        /// <summary>
+        /// Creates a new QueueClient which can create, write to, read from, delete from and delete a Windows
+        /// Azure Storage Queue. 
+        /// </summary>
+        /// <param name="accountName"></param>
+        /// <param name="accountKey"></param>
         public QueueClient(string accountName, string accountKey)
         {
             AccountName = accountName;
