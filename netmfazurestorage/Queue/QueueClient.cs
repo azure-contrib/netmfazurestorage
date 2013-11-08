@@ -5,6 +5,7 @@ using System.Text;
 using ElzeKool;
 using Microsoft.SPOT;
 using NetMf.CommonExtensions;
+using netmfazurestorage.Http;
 
 namespace netmfazurestorage.Queue
 {
@@ -53,75 +54,7 @@ namespace netmfazurestorage.Queue
             var contentBytes = Encoding.UTF8.GetBytes(content);
             contentLength = content.Length;
             return contentBytes;
-        }
-
-        private HttpWebRequest PrepareRequest(string url, string authHeader, byte[] fileBytes = null, int contentLength = 0, string httpVerb = "GET")
-        {
-            var uri = new Uri(url);
-            var request = (HttpWebRequest)WebRequest.Create(uri);
-            request.Method = httpVerb;
-            request.ContentLength = contentLength;
-            request.Headers.Add("x-ms-date", DateHeader);
-            request.Headers.Add("x-ms-version", VersionHeader);
-            request.Headers.Add("Authorization", authHeader);
-            if (contentLength != 0)
-            {
-                request.GetRequestStream().Write(fileBytes, 0, fileBytes.Length);
-            }
-            return request;
-        }
-
-        protected string SendWebRequest(string url, string authHeader, byte[] fileBytes = null, int contentLength = 0, string httpVerb = "GET")
-        {
-            string responseBody = "";
-            HttpWebRequest request = PrepareRequest(url, authHeader, fileBytes, contentLength, httpVerb);
-            try
-            {
-                HttpWebResponse response;
-                using (response = (HttpWebResponse)request.GetResponse())
-                {
-                    if (response.StatusCode == HttpStatusCode.Created)
-                    {
-                        Debug.Print("Queue has been created!");
-                    }
-                    if (response.StatusCode == HttpStatusCode.Accepted)
-                    {
-                        Debug.Print("Queue action has been completed");
-                    }
-                    if (response.StatusCode == HttpStatusCode.Forbidden)
-                    {
-                        throw new WebException("Forbidden", null, WebExceptionStatus.ServerProtocolViolation, response);
-                    }
-
-                    using (var responseStream = response.GetResponseStream())
-                    using (var reader = new StreamReader(responseStream))
-                    {
-                        char[] bytes = new char[(int)responseStream.Length];
-
-                        if (bytes.Length > 0)
-                        {
-                            reader.Read(bytes, 0, bytes.Length);
-
-                            responseBody = new string(bytes);
-                        }
-                    }
-                }
-            }
-            catch (WebException ex)
-            {
-                if (((HttpWebResponse)ex.Response).StatusCode == HttpStatusCode.Conflict)
-                {
-                    Debug.Print("container or blob already exists!");
-                }
-                if (((HttpWebResponse)ex.Response).StatusCode == HttpStatusCode.Forbidden)
-                {
-                    Debug.Print("problem with signature!");
-                }
-            }
-
-            Debug.Print(responseBody);
-            return responseBody;
-        }
+        } 
 
         protected string CreateAuthorizationHeader(String canResource, string options = "", int contentLength = 0, bool useZero = false, string httpVerb = "GET")
         {
@@ -143,7 +76,7 @@ namespace netmfazurestorage.Queue
             var url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}", AccountName, queueName);
             string can = StringUtility.Format("/{0}/{1}", AccountName, queueName);
             var auth = CreateAuthorizationHeader(can, "", 0, true, "PUT");
-            SendWebRequest(url, auth, null, 0, "PUT");
+            HttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader, fileBytes: null, contentLength: 0, httpVerb: "PUT");
         }
 
         public void CreateQueueMessage(string queueName, string message)
@@ -156,7 +89,7 @@ namespace netmfazurestorage.Queue
             string can = StringUtility.Format("/{0}/{1}/messages", AccountName, queueName);
             string auth = CreateAuthorizationHeader(can, "", length, false, "POST");
             string url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}/messages", AccountName, queueName);
-            SendWebRequest(url, auth, content, length, "POST");
+            HttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader, content, length, "POST");
 
         }
 
@@ -168,7 +101,7 @@ namespace netmfazurestorage.Queue
             string can = StringUtility.Format("/{0}/{1}/messages", AccountName, queueName);
             string auth = CreateAuthorizationHeader(can, "", 0, true);
             string url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}/messages", AccountName, queueName);
-            var responseBody = SendWebRequest(url, auth);
+            var responseBody = HttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader);
 
             if (responseBody == null)
                 return null;
@@ -210,7 +143,7 @@ namespace netmfazurestorage.Queue
             string url =
                 StringUtility.Format("http://{0}.queue.core.windows.net/{3}/messages/{2}?popreceipt={1}",
                                      AccountName, popReceipt, messageId, queueName);
-            SendWebRequest(url, auth, null, 0, "DELETE");
+            HttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader, null, 0, "DELETE");
 
         }
 
@@ -220,7 +153,7 @@ namespace netmfazurestorage.Queue
             var url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}", AccountName, queueName);
             string can = StringUtility.Format("/{0}/{1}", AccountName, queueName);
             var auth = CreateAuthorizationHeader(can, "", 0, true, "DELETE");
-            SendWebRequest(url, auth, null, 0, "DELETE");
+            HttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader, null, 0, "DELETE");
         }
     }
 }
