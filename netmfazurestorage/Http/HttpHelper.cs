@@ -13,7 +13,7 @@ namespace netmfazurestorage.Http
         public static string SendWebRequest(string url, string authHeader, string dateHeader, string versionHeader, byte[] fileBytes = null, int contentLength = 0, string httpVerb = "GET")
         {
             string responseBody = "";
-            HttpWebRequest request = PrepareRequest(url, authHeader, dateHeader, versionHeader, fileBytes: fileBytes, contentLength: contentLength, httpVerb: httpVerb);
+            HttpWebRequest request = PrepareRequest(url, authHeader, dateHeader, versionHeader, fileBytes, contentLength, httpVerb);
             try
             {
                 HttpWebResponse response;
