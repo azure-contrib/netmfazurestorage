@@ -171,12 +171,78 @@ namespace netmfazurestorage.Table
             return result;
         }
 
-        public string QueryTable(string tablename, string partitionKey, string rowKey)
+        public Hashtable QueryTable(string tablename, string partitionKey, string rowKey)
         {
             var header = CreateAuthorizationHeader(null, ContentType, StringUtility.Format("/{0}/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey));
-            return SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey), header, null, 0, "GET");
-        
+            var xml = SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey), header, null, 0, "GET");
+            string token = null;
+            Hashtable results = null;
+            var nextStart = 0;
+            while (null != (token = NextToken(xml, "<m:properties>", "</m:properties>", nextStart, out nextStart)))
+            {
+                results = new Hashtable();
+
+                string propertyToken = null;
+                int nextPropertyStart = 0;
+                while (null != (propertyToken = NextToken(xml, "<d:", "</d", nextPropertyStart, out nextPropertyStart)))
+                {
+                    var parts = propertyToken.Split('>');
+                    if (parts.Length != 2) continue;
+                    var rawvalue = parts[1];
+                    var propertyName = parts[0].Split(' ')[0];
+                    
+                    var _ = 0;
+                    var type = NextToken(propertyToken, "m:type=\"", "\"", 0, out _);
+                    if (null == type)
+                    { 
+                        type = "Edm.String";
+                    }
+                    switch (type)
+                    {
+                        case "Edm.String":
+                            results.Add(propertyName, rawvalue);
+                            break;
+                        case "Edm.DateTime":
+                            // not supported
+                            break;
+                        case "Edm.Int64":
+                            results.Add(propertyName, Int64.Parse(rawvalue));
+                            break;
+                        case "Edm.Int32":
+                            results.Add(propertyName, Int32.Parse(rawvalue));
+                            break;
+                        case "Edm.Double":
+                            results.Add(propertyName, Double.Parse(rawvalue));
+                            break;
+                        case "Edm.Boolean":
+                            results.Add(propertyName, rawvalue == "true");
+                            break;
+                        case "Edm.Guid":
+                            // not supported
+                            break;
+                    }
+                }
+            }
+            return results;
         }
+
+        private string NextToken(string xml, string startToken, string endToken, int startPosition, out int nextStart)
+        {
+            if (startPosition > xml.Length)
+            {
+                nextStart = xml.Length;
+                return null;
+            }
+            var start = xml.IndexOf(startToken, startPosition);
+            nextStart = 0;
+            if (start < 0) return null;
+            start += startToken.Length;
+            var end = xml.IndexOf(endToken, start);
+            nextStart = end + endToken.Length;
+            return xml.Substring(start, end - start);           
+        }
+
+
 
         #region Request Handling
 
