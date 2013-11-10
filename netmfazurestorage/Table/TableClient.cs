@@ -63,6 +63,7 @@ namespace netmfazurestorage.Table
             SendWebRequest("http://" + AccountName + ".table.core.windows.net/Tables()", header, payload, contentLength);
         }
 
+        [Obsolete("Please use the InsertTableEntity method; this AddTableEntityForTemperature method will be removed in a future release.", false)]
         public void AddTableEntityForTemperature(string tablename, string partitionKey, string rowKey, DateTime timeStamp, double temperature, string country)
         {
             var timestamp = timeStamp.ToString("yyyy-MM-ddTHH:mm:ss.0000000Z");
