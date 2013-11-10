@@ -117,7 +117,9 @@ namespace netmfazurestorage.Queue
 
         private string GetNodeValue(string responseBody, string nodeName)
         {
-            lock (this)
+            // why are you locking this? I can't see any multithreading?
+            // I love the deserialization strategy BTW :¬)
+            lock (this) 
             {
                 string ret = "";
                 int pos = responseBody.IndexOf(nodeName);
