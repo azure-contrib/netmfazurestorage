@@ -110,6 +110,29 @@ namespace netmfazurestorage.Table
             SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, payload, contentLength);
         }
 
+        public void InsertTableEntity_Experimental(string tablename, string partitionKey, string rowKey, DateTime timeStamp, Hashtable tableEntityProperties)
+        {
+            var timestamp = timeStamp.ToString("yyyy-MM-ddTHH:mm:ss.0000000Z");
+
+            string xml =
+                StringUtility.Format("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?><entry xml:base=\"http://{0}.table.core.windows.net/\" xmlns:d=\"http://schemas.microsoft.com/ado/2007/08/dataservices\" xmlns:m=\"http://schemas.microsoft.com/ado/2007/08/dataservices/metadata\" m:etag=\"W/&quot;datetime'2008-09-18T23%3A46%3A19.4277424Z'&quot;\" xmlns=\"http://www.w3.org/2005/Atom\">" +
+                "<id>http://{0}.table.core.windows.net/{5}(PartitionKey='{2}',RowKey='{3}')</id>" +
+                "<title/><updated>{1}</updated><author><name /></author>" +
+                "<link />" +
+                "<category term=\"{0}.Tables\" scheme=\"http://schemas.microsoft.com/ado/2007/08/dataservices/scheme\" />" +
+                "<content type=\"application/xml\"><m:properties><d:PartitionKey>{2}</d:PartitionKey><d:RowKey>{3}</d:RowKey>" +
+                "<d:Timestamp m:type=\"Edm.DateTime\">{1}</d:Timestamp>" +
+                "{4}" +
+                "</m:properties>" +
+                "</content>" +
+                "</entry>", AccountName, timestamp, partitionKey, rowKey, GetTableXml(tableEntityProperties), tablename);
+
+            int contentLength = 0;
+            byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
+            string header = CreateAuthorizationHeader(payload, ContentType, StringUtility.Format("/{0}/{1}", AccountName, tablename));
+            SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, payload, contentLength);
+        }
+
         private string GetTableXml(ArrayList tableEntityProperties)
         {
             string result=string.Empty;
@@ -125,6 +148,101 @@ namespace netmfazurestorage.Table
 
             return result;
         }
+
+        private static string GetTableXml(Hashtable tableEntityProperties)
+        {
+            string result = string.Empty;
+            foreach (var key in tableEntityProperties.Keys)
+            {
+                var value = tableEntityProperties[key];
+                if (value == null) continue;
+                var type = value.GetType().Name;
+                switch (type)
+                {
+                    case "DateTime":
+                        value = ((DateTime)value).ToString("yyyy-MM-ddTHH:mm:ss.0000000Z");
+                        break;
+                    case "Boolean":
+                        value = (Boolean) value ? "true" : "false"; // bool is title case when you call ToString()
+                        break;
+                }
+                result += StringUtility.Format("<d:{0} m:type=\"Edm.{2}\">{1}</d:{0}>", key, value, type);
+            }
+            return result;
+        }
+
+        public Hashtable QueryTable(string tablename, string partitionKey, string rowKey)
+        {
+            var header = CreateAuthorizationHeader(null, ContentType, StringUtility.Format("/{0}/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey));
+            var xml = SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey), header, null, 0, "GET");
+            string token = null;
+            Hashtable results = null;
+            var nextStart = 0;
+            while (null != (token = NextToken(xml, "<m:properties>", "</m:properties>", nextStart, out nextStart)))
+            {
+                results = new Hashtable();
+
+                string propertyToken = null;
+                int nextPropertyStart = 0;
+                while (null != (propertyToken = NextToken(xml, "<d:", "</d", nextPropertyStart, out nextPropertyStart)))
+                {
+                    var parts = propertyToken.Split('>');
+                    if (parts.Length != 2) continue;
+                    var rawvalue = parts[1];
+                    var propertyName = parts[0].Split(' ')[0];
+                    
+                    var _ = 0;
+                    var type = NextToken(propertyToken, "m:type=\"", "\"", 0, out _);
+                    if (null == type)
+                    { 
+                        type = "Edm.String";
+                    }
+                    switch (type)
+                    {
+                        case "Edm.String":
+                            results.Add(propertyName, rawvalue);
+                            break;
+                        case "Edm.DateTime":
+                            // not supported
+                            break;
+                        case "Edm.Int64":
+                            results.Add(propertyName, Int64.Parse(rawvalue));
+                            break;
+                        case "Edm.Int32":
+                            results.Add(propertyName, Int32.Parse(rawvalue));
+                            break;
+                        case "Edm.Double":
+                            results.Add(propertyName, Double.Parse(rawvalue));
+                            break;
+                        case "Edm.Boolean":
+                            results.Add(propertyName, rawvalue == "true");
+                            break;
+                        case "Edm.Guid":
+                            // not supported
+                            break;
+                    }
+                }
+            }
+            return results;
+        }
+
+        private string NextToken(string xml, string startToken, string endToken, int startPosition, out int nextStart)
+        {
+            if (startPosition > xml.Length)
+            {
+                nextStart = xml.Length;
+                return null;
+            }
+            var start = xml.IndexOf(startToken, startPosition);
+            nextStart = 0;
+            if (start < 0) return null;
+            start += startToken.Length;
+            var end = xml.IndexOf(endToken, start);
+            nextStart = end + endToken.Length;
+            return xml.Substring(start, end - start);           
+        }
+
+
 
         #region Request Handling
 
@@ -155,9 +273,9 @@ namespace netmfazurestorage.Table
             return request;
         }
 
-        protected void SendWebRequest(string url, string authHeader, byte[] fileBytes = null, int contentLength = 0)
+        protected string SendWebRequest(string url, string authHeader, byte[] fileBytes = null, int contentLength = 0, string verb = "POST")
         {
-            HttpWebRequest request = PrepareRequest(url, authHeader, fileBytes, contentLength);
+            HttpWebRequest request = PrepareRequest(url, authHeader, fileBytes, contentLength, verb);
             try
             {
                 HttpWebResponse response;
@@ -170,7 +288,7 @@ namespace netmfazurestorage.Table
                     else
                     {
                         Debug.Print("Status was " + response.StatusCode);
-                        var ResponseBody = "";
+                        var responseBody = "";
                         using (var responseStream = response.GetResponseStream())
                         using (var reader = new StreamReader(responseStream))
                         {
@@ -180,10 +298,11 @@ namespace netmfazurestorage.Table
                             {
                                 reader.Read(bytes, 0, bytes.Length);
 
-                                ResponseBody = new string(bytes);
+                                responseBody = new string(bytes);
                             }
                         }
-                        Debug.Print(ResponseBody);
+                        Debug.Print(responseBody);
+                        return responseBody; 
                     }
                     //if (response.StatusCode == HttpStatusCode.Accepted)
                     //{
@@ -202,6 +321,7 @@ namespace netmfazurestorage.Table
                     Debug.Print("problem with signature!");
                 }
             }
+            return null;
         }
 
         #endregion
