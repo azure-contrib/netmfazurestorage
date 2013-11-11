@@ -21,11 +21,11 @@ namespace netmfazurestorage.Http
                 {
                     if (response.StatusCode == HttpStatusCode.Created)
                     {
-                        Debug.Print("Queue has been created!");
+                        Debug.Print("Asset has been created!");
                     }
                     if (response.StatusCode == HttpStatusCode.Accepted)
                     {
-                        Debug.Print("Queue action has been completed");
+                        Debug.Print("Action has been completed");
                     }
                     if (response.StatusCode == HttpStatusCode.Forbidden)
                     {
@@ -50,11 +50,11 @@ namespace netmfazurestorage.Http
             {
                 if (((HttpWebResponse)ex.Response).StatusCode == HttpStatusCode.Conflict)
                 {
-                    Debug.Print("container or blob already exists!");
+                    Debug.Print("Asset already exists!");
                 }
                 if (((HttpWebResponse)ex.Response).StatusCode == HttpStatusCode.Forbidden)
                 {
-                    Debug.Print("problem with signature!");
+                    Debug.Print("Problem with signature. Check next debug statement for stack");
                 }
             }
 
