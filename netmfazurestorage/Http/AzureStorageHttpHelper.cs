@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.IO;
 using System.Net;
 using Microsoft.SPOT;
@@ -10,11 +11,11 @@ namespace netmfazurestorage.Http
     /// </summary>
     public static class AzureStorageHttpHelper
     {
-        public static BasicHttpResponse SendWebRequest(string url, string authHeader, string dateHeader, string versionHeader, byte[] fileBytes = null, int contentLength = 0, string httpVerb = "GET")
+        public static BasicHttpResponse SendWebRequest(string url, string authHeader, string dateHeader, string versionHeader, byte[] fileBytes = null, int contentLength = 0, string httpVerb = "GET", bool expect100Continue = false, Hashtable additionalHeaders = null)
         {
             string responseBody = "";
             HttpStatusCode responseStatusCode = HttpStatusCode.Ambiguous;
-            HttpWebRequest request = PrepareRequest(url, authHeader, dateHeader, versionHeader, fileBytes, contentLength, httpVerb);
+            HttpWebRequest request = PrepareRequest(url, authHeader, dateHeader, versionHeader, fileBytes, contentLength, httpVerb, expect100Continue, additionalHeaders);
             try
             {
                 HttpWebResponse response;
@@ -75,7 +76,7 @@ namespace netmfazurestorage.Http
         /// <param name="contentLength"></param>
         /// <param name="httpVerb"></param>
         /// <returns></returns>
-        private static HttpWebRequest PrepareRequest(string url, string authHeader, string dateHeader, string versionHeader, byte[] fileBytes = null, int contentLength = 0, string httpVerb = "GET")
+        private static HttpWebRequest PrepareRequest(string url, string authHeader, string dateHeader, string versionHeader, byte[] fileBytes = null, int contentLength = 0, string httpVerb = "GET", bool expect100Continue = false, Hashtable additionalHeaders = null)
         {
             var uri = new Uri(url);
             var request = (HttpWebRequest)WebRequest.Create(uri);
@@ -84,6 +85,20 @@ namespace netmfazurestorage.Http
             request.Headers.Add("x-ms-date", dateHeader);
             request.Headers.Add("x-ms-version", versionHeader);
             request.Headers.Add("Authorization", authHeader);
+
+            if (expect100Continue)
+            {
+                request.Expect = "100-continue";
+            }
+
+            if (additionalHeaders != null)
+            {
+                foreach (var additionalHeader in additionalHeaders.Keys)
+                {
+                    request.Headers.Add(additionalHeader.ToString(), additionalHeaders[additionalHeader].ToString());
+                }
+            }
+
             if (contentLength != 0)
             {
                 request.GetRequestStream().Write(fileBytes, 0, fileBytes.Length);
