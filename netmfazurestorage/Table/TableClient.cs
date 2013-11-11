@@ -7,6 +7,7 @@ using ElzeKool;
 using Microsoft.SPOT;
 using NetMf.CommonExtensions;
 using System.Collections;
+using netmfazurestorage.Http;
 
 namespace netmfazurestorage.Table
 {
@@ -20,6 +21,7 @@ namespace netmfazurestorage.Table
 
         internal const string VersionHeader = "2011-08-18";
         internal const string ContentType = "application/atom+xml";
+        private string DateHeader { get; set; }
 
         #endregion
 
@@ -41,6 +43,7 @@ namespace netmfazurestorage.Table
             InstanceDate = DateTime.UtcNow;
             AccountName = accountName;
             AccountKey = accountKey;
+            DateHeader = DateTime.UtcNow.ToString("R");
         }
 
         public void CreateTable(string tableName)
@@ -60,7 +63,7 @@ namespace netmfazurestorage.Table
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
             string header = CreateAuthorizationHeader(payload, ContentType, "/" + AccountName + "/Tables()");
-            SendWebRequest("http://" + AccountName + ".table.core.windows.net/Tables()", header, payload, contentLength);
+            HttpHelper.SendWebRequest("http://" + AccountName + ".table.core.windows.net/Tables()", header, DateHeader, VersionHeader, payload, contentLength);
         }
 
         [Obsolete("Please use the InsertTableEntity method; this AddTableEntityForTemperature method will be removed in a future release.", false)]
@@ -85,7 +88,7 @@ namespace netmfazurestorage.Table
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
             string header = CreateAuthorizationHeader(payload, ContentType, StringUtility.Format("/{0}/{1}", AccountName, tablename));
-            SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, payload, contentLength);
+            HttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength);
         }
 
         public void InsertTableEntity(string tablename, string partitionKey, string rowKey, DateTime timeStamp, System.Collections.ArrayList tableEntityProperties)
@@ -108,7 +111,7 @@ namespace netmfazurestorage.Table
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
             string header = CreateAuthorizationHeader(payload, ContentType, StringUtility.Format("/{0}/{1}", AccountName, tablename));
-            SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, payload, contentLength);
+            HttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength);
         }
 
         public void InsertTableEntity_Experimental(string tablename, string partitionKey, string rowKey, DateTime timeStamp, Hashtable tableEntityProperties)
@@ -131,7 +134,7 @@ namespace netmfazurestorage.Table
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
             string header = CreateAuthorizationHeader(payload, ContentType, StringUtility.Format("/{0}/{1}", AccountName, tablename));
-            SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, payload, contentLength);
+            HttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength);
         }
 
         private string GetTableXml(ArrayList tableEntityProperties)
@@ -175,7 +178,7 @@ namespace netmfazurestorage.Table
         public Hashtable QueryTable(string tablename, string partitionKey, string rowKey)
         {
             var header = CreateAuthorizationHeader(null, ContentType, StringUtility.Format("/{0}/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey));
-            var xml = SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey), header, null, 0, "GET");
+            var xml = HttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey), header, DateHeader, VersionHeader, null, 0, "GET");
             string token = null;
             Hashtable results = null;
             var nextStart = 0;
@@ -242,90 +245,6 @@ namespace netmfazurestorage.Table
             nextStart = end + endToken.Length;
             return xml.Substring(start, end - start);           
         }
-
-
-
-        #region Request Handling
-
-        //DataServiceVersion: Set the value of this header to 1.0;NetFx.
-        //MaxDataServiceVersion: Set the value of this header to 1.0;NetFx.
-
-        private HttpWebRequest PrepareRequest(string url, string authHeader, byte[] fileBytes = null, int contentLength = 0, string verb = "POST")
-        {
-            var uri = new Uri(url);
-            var request = (HttpWebRequest)WebRequest.Create(uri);
-            request.Method = verb;
-            request.Headers.Add("x-ms-date", InstanceDate.ToString("R"));
-            request.Headers.Add("DataServiceVersion", "1.0;NetFx");
-            request.Headers.Add("MaxDataServiceVersion", "1.0;NetFx");
-            request.ContentType = ContentType;
-            request.ContentLength = contentLength;
-            request.Headers.Add("Date", InstanceDate.ToString("R"));
-            request.Headers.Add("x-ms-version", VersionHeader);
-            request.Headers.Add("Authorization", authHeader);
-
-            if (AttachFiddler)
-                request.Proxy = new WebProxy("127.0.0.1", 8888);
-
-            if (contentLength != 0)
-            {
-                request.GetRequestStream().Write(fileBytes, 0, fileBytes.Length);
-            }
-            return request;
-        }
-
-        protected string SendWebRequest(string url, string authHeader, byte[] fileBytes = null, int contentLength = 0, string verb = "POST")
-        {
-            HttpWebRequest request = PrepareRequest(url, authHeader, fileBytes, contentLength, verb);
-            try
-            {
-                HttpWebResponse response;
-                using (response = (HttpWebResponse)request.GetResponse())
-                {
-                    if (response.StatusCode == HttpStatusCode.Created)
-                    {
-                        Debug.Print("Resource has been created");
-                    }
-                    else
-                    {
-                        Debug.Print("Status was " + response.StatusCode);
-                        var responseBody = "";
-                        using (var responseStream = response.GetResponseStream())
-                        using (var reader = new StreamReader(responseStream))
-                        {
-                            char[] bytes = new char[(int)responseStream.Length];
-
-                            if (bytes.Length > 0)
-                            {
-                                reader.Read(bytes, 0, bytes.Length);
-
-                                responseBody = new string(bytes);
-                            }
-                        }
-                        Debug.Print(responseBody);
-                        return responseBody; 
-                    }
-                    //if (response.StatusCode == HttpStatusCode.Accepted)
-                    //{
-                    //    Trace.WriteLine("Container or blob action has been completed");
-                    //}
-                }
-            }
-            catch (WebException ex)
-            {
-                if (((HttpWebResponse)ex.Response).StatusCode == HttpStatusCode.Conflict)
-                {
-                    Debug.Print("container or blob already exists!");
-                }
-                if (((HttpWebResponse)ex.Response).StatusCode == HttpStatusCode.Forbidden)
-                {
-                    Debug.Print("problem with signature!");
-                }
-            }
-            return null;
-        }
-
-        #endregion
 
         #region Shared Access Signature
 
