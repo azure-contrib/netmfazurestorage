@@ -76,7 +76,7 @@ namespace netmfazurestorage.Queue
             var url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}", AccountName, queueName);
             string can = StringUtility.Format("/{0}/{1}", AccountName, queueName);
             var auth = CreateAuthorizationHeader(can, "", 0, true, "PUT");
-            HttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader, fileBytes: null, contentLength: 0, httpVerb: "PUT");
+            AzureStorageHttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader, fileBytes: null, contentLength: 0, httpVerb: "PUT");
         }
 
         public void CreateQueueMessage(string queueName, string message)
@@ -89,7 +89,7 @@ namespace netmfazurestorage.Queue
             string can = StringUtility.Format("/{0}/{1}/messages", AccountName, queueName);
             string auth = CreateAuthorizationHeader(can, "", length, false, "POST");
             string url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}/messages", AccountName, queueName);
-            HttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader, content, length, "POST");
+            AzureStorageHttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader, content, length, "POST");
 
         }
 
@@ -101,14 +101,14 @@ namespace netmfazurestorage.Queue
             string can = StringUtility.Format("/{0}/{1}/messages", AccountName, queueName);
             string auth = CreateAuthorizationHeader(can, "", 0, true);
             string url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}/messages", AccountName, queueName);
-            var responseBody = HttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader);
+            var response = AzureStorageHttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader);
 
-            if (responseBody == null)
+            if (response.Body == null)
                 return null;
 
-            string retMessage = GetNodeValue(responseBody, "MessageText");
-            string popReceipt = GetNodeValue(responseBody, "PopReceipt");
-            string messageId = GetNodeValue(responseBody, "MessageId");
+            string retMessage = GetNodeValue(response.Body, "MessageText");
+            string popReceipt = GetNodeValue(response.Body, "PopReceipt");
+            string messageId = GetNodeValue(response.Body, "MessageId");
 
             string decoded = new string(Encoding.UTF8.GetChars(Convert.FromBase64String(retMessage)));
 
@@ -145,7 +145,7 @@ namespace netmfazurestorage.Queue
             string url =
                 StringUtility.Format("http://{0}.queue.core.windows.net/{3}/messages/{2}?popreceipt={1}",
                                      AccountName, popReceipt, messageId, queueName);
-            HttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader, null, 0, "DELETE");
+            AzureStorageHttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader, null, 0, "DELETE");
 
         }
 
@@ -155,7 +155,7 @@ namespace netmfazurestorage.Queue
             var url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}", AccountName, queueName);
             string can = StringUtility.Format("/{0}/{1}", AccountName, queueName);
             var auth = CreateAuthorizationHeader(can, "", 0, true, "DELETE");
-            HttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader, null, 0, "DELETE");
+            AzureStorageHttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader, null, 0, "DELETE");
         }
     }
 }

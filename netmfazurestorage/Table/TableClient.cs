@@ -63,7 +63,7 @@ namespace netmfazurestorage.Table
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
             string header = CreateAuthorizationHeader(payload, ContentType, "/" + AccountName + "/Tables()");
-            HttpHelper.SendWebRequest("http://" + AccountName + ".table.core.windows.net/Tables()", header, DateHeader, VersionHeader, payload, contentLength);
+            AzureStorageHttpHelper.SendWebRequest("http://" + AccountName + ".table.core.windows.net/Tables()", header, DateHeader, VersionHeader, payload, contentLength);
         }
 
         [Obsolete("Please use the InsertTableEntity method; this AddTableEntityForTemperature method will be removed in a future release.", false)]
@@ -88,7 +88,7 @@ namespace netmfazurestorage.Table
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
             string header = CreateAuthorizationHeader(payload, ContentType, StringUtility.Format("/{0}/{1}", AccountName, tablename));
-            HttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength);
+            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength);
         }
 
         public void InsertTableEntity(string tablename, string partitionKey, string rowKey, DateTime timeStamp, System.Collections.ArrayList tableEntityProperties)
@@ -111,7 +111,7 @@ namespace netmfazurestorage.Table
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
             string header = CreateAuthorizationHeader(payload, ContentType, StringUtility.Format("/{0}/{1}", AccountName, tablename));
-            HttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength);
+            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength);
         }
 
         public void InsertTableEntity_Experimental(string tablename, string partitionKey, string rowKey, DateTime timeStamp, Hashtable tableEntityProperties)
@@ -134,7 +134,7 @@ namespace netmfazurestorage.Table
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
             string header = CreateAuthorizationHeader(payload, ContentType, StringUtility.Format("/{0}/{1}", AccountName, tablename));
-            HttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength);
+            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength);
         }
 
         private string GetTableXml(ArrayList tableEntityProperties)
@@ -178,17 +178,17 @@ namespace netmfazurestorage.Table
         public Hashtable QueryTable(string tablename, string partitionKey, string rowKey)
         {
             var header = CreateAuthorizationHeader(null, ContentType, StringUtility.Format("/{0}/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey));
-            var xml = HttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey), header, DateHeader, VersionHeader, null, 0, "GET");
+            var xml = AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey), header, DateHeader, VersionHeader, null, 0, "GET");
             string token = null;
             Hashtable results = null;
             var nextStart = 0;
-            while (null != (token = NextToken(xml, "<m:properties>", "</m:properties>", nextStart, out nextStart)))
+            while (null != (token = NextToken(xml.Body, "<m:properties>", "</m:properties>", nextStart, out nextStart)))
             {
                 results = new Hashtable();
 
                 string propertyToken = null;
                 int nextPropertyStart = 0;
-                while (null != (propertyToken = NextToken(xml, "<d:", "</d", nextPropertyStart, out nextPropertyStart)))
+                while (null != (propertyToken = NextToken(xml.Body, "<d:", "</d", nextPropertyStart, out nextPropertyStart)))
                 {
                     var parts = propertyToken.Split('>');
                     if (parts.Length != 2) continue;

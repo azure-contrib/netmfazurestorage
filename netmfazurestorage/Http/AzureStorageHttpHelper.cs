@@ -6,19 +6,21 @@ using Microsoft.SPOT;
 namespace netmfazurestorage.Http
 {
     /// <summary>
-    /// oh boy I hate helpers like this.
+    /// A common helper class for HTTP access to Windows Azure Storage
     /// </summary>
-    public static class HttpHelper
+    public static class AzureStorageHttpHelper
     {
-        public static string SendWebRequest(string url, string authHeader, string dateHeader, string versionHeader, byte[] fileBytes = null, int contentLength = 0, string httpVerb = "GET")
+        public static BasicHttpResponse SendWebRequest(string url, string authHeader, string dateHeader, string versionHeader, byte[] fileBytes = null, int contentLength = 0, string httpVerb = "GET")
         {
             string responseBody = "";
+            HttpStatusCode responseStatusCode = HttpStatusCode.Ambiguous;
             HttpWebRequest request = PrepareRequest(url, authHeader, dateHeader, versionHeader, fileBytes, contentLength, httpVerb);
             try
             {
                 HttpWebResponse response;
                 using (response = (HttpWebResponse)request.GetResponse())
                 {
+                    responseStatusCode = response.StatusCode;
                     if (response.StatusCode == HttpStatusCode.Created)
                     {
                         Debug.Print("Asset has been created!");
@@ -59,9 +61,20 @@ namespace netmfazurestorage.Http
             }
 
             Debug.Print(responseBody);
-            return responseBody;
+            return new BasicHttpResponse() {Body = responseBody, StatusCode = responseStatusCode};
         }
 
+        /// <summary>
+        /// Prepares a HttpWebRequest with required headers of x-ms-date, x-ms-version and Authorization
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="authHeader"></param>
+        /// <param name="dateHeader"></param>
+        /// <param name="versionHeader"></param>
+        /// <param name="fileBytes"></param>
+        /// <param name="contentLength"></param>
+        /// <param name="httpVerb"></param>
+        /// <returns></returns>
         private static HttpWebRequest PrepareRequest(string url, string authHeader, string dateHeader, string versionHeader, byte[] fileBytes = null, int contentLength = 0, string httpVerb = "GET")
         {
             var uri = new Uri(url);
