@@ -17,20 +17,16 @@ namespace netmfazurestorage.Table
         public static string AccountKey;
         public static bool AttachFiddler;
 
-        #region constants
-
+        
         internal const string VersionHeader = "2011-08-18";
         internal const string ContentType = "application/atom+xml";
         private string DateHeader { get; set; }
 
-        #endregion
-
-        #region Properties
+        private Hashtable additionalHeaders;
 
         internal DateTime InstanceDate { get; set; }
 
-        #endregion
-
+        
         protected byte[] GetBodyBytesAndLength(string body, out int contentLength)
         {
             var content = Encoding.UTF8.GetBytes(body);
@@ -44,6 +40,10 @@ namespace netmfazurestorage.Table
             AccountName = accountName;
             AccountKey = accountKey;
             DateHeader = DateTime.UtcNow.ToString("R");
+            additionalHeaders = new Hashtable();
+            additionalHeaders.Add("DataServiceVersion", "1.0;NetFx");
+            additionalHeaders.Add("MaxDataServiceVersion", "1.0;NetFx");
+            additionalHeaders.Add("Content-Type", ContentType);
         }
 
         public void CreateTable(string tableName)
@@ -62,8 +62,8 @@ namespace netmfazurestorage.Table
 
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
-            string header = CreateAuthorizationHeader(payload, ContentType, "/" + AccountName + "/Tables()");
-            AzureStorageHttpHelper.SendWebRequest("http://" + AccountName + ".table.core.windows.net/Tables()", header, DateHeader, VersionHeader, payload, contentLength);
+            string header = CreateAuthorizationHeader(payload, "/" + AccountName + "/Tables()");
+            AzureStorageHttpHelper.SendWebRequest("http://" + AccountName + ".table.core.windows.net/Tables()", header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders);
         }
 
         [Obsolete("Please use the InsertTableEntity method; this AddTableEntityForTemperature method will be removed in a future release.", false)]
@@ -87,8 +87,8 @@ namespace netmfazurestorage.Table
 
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
-            string header = CreateAuthorizationHeader(payload, ContentType, StringUtility.Format("/{0}/{1}", AccountName, tablename));
-            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength);
+            string header = CreateAuthorizationHeader(payload, StringUtility.Format("/{0}/{1}", AccountName, tablename));
+            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength, "GET", false, this.additionalHeaders);
         }
 
         public void InsertTableEntity(string tablename, string partitionKey, string rowKey, DateTime timeStamp, System.Collections.ArrayList tableEntityProperties)
@@ -110,8 +110,8 @@ namespace netmfazurestorage.Table
 
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
-            string header = CreateAuthorizationHeader(payload, ContentType, StringUtility.Format("/{0}/{1}", AccountName, tablename));
-            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength);
+            string header = CreateAuthorizationHeader(payload, StringUtility.Format("/{0}/{1}", AccountName, tablename));
+            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders);
         }
 
         public void InsertTableEntity_Experimental(string tablename, string partitionKey, string rowKey, DateTime timeStamp, Hashtable tableEntityProperties)
@@ -133,8 +133,8 @@ namespace netmfazurestorage.Table
 
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
-            string header = CreateAuthorizationHeader(payload, ContentType, StringUtility.Format("/{0}/{1}", AccountName, tablename));
-            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength);
+            string header = CreateAuthorizationHeader(payload, StringUtility.Format("/{0}/{1}", AccountName, tablename));
+            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders);
         }
 
         private string GetTableXml(ArrayList tableEntityProperties)
@@ -177,8 +177,8 @@ namespace netmfazurestorage.Table
 
         public Hashtable QueryTable(string tablename, string partitionKey, string rowKey)
         {
-            var header = CreateAuthorizationHeader(null, ContentType, StringUtility.Format("/{0}/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey));
-            var xml = AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey), header, DateHeader, VersionHeader, null, 0, "GET");
+            var header = CreateAuthorizationHeader(null, StringUtility.Format("/{0}/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey));
+            var xml = AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey), header, DateHeader, VersionHeader, null, 0, "GET", false, this.additionalHeaders);
             string token = null;
             Hashtable results = null;
             var nextStart = 0;
@@ -258,7 +258,7 @@ namespace netmfazurestorage.Table
                Date + "\n" +
                CanonicalizedResource;*/
         // Signature=Base64(HMAC-SHA256(UTF8(StringToSign)))
-        protected string CreateAuthorizationHeader(byte[] content, string contentType, string canonicalResource)
+        protected string CreateAuthorizationHeader(byte[] content, string canonicalResource)
         {
             //string toSign = String.Format("{0}\n{1}\n{2}\n{3}\n{4}",
             //                              HttpVerb, hash, contentType, InstanceDate, canonicalResource);

@@ -6,17 +6,12 @@ using ElzeKool;
 using Microsoft.SPOT;
 using NetMf.CommonExtensions;
 using netmfazurestorage.Http;
+using System.Collections;
 
 namespace netmfazurestorage.Queue
 {
     public class QueueClient
     {
-        #region private members
-
-        private string _httpVerb = "PUT";
-
-        #endregion
-
         #region constants
 
         internal const string HttpVerbPut = "PUT";
