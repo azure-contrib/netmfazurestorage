@@ -178,54 +178,81 @@ namespace netmfazurestorage.Table
         public Hashtable QueryTable(string tablename, string partitionKey, string rowKey)
         {
             var header = CreateAuthorizationHeader(null, StringUtility.Format("/{0}/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey));
-            var xml = AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey), header, DateHeader, VersionHeader, null, 0, "GET", false, this.additionalHeaders);
-            string token = null;
-            Hashtable results = null;
-            var nextStart = 0;
-            while (null != (token = NextToken(xml.Body, "<m:properties>", "</m:properties>", nextStart, out nextStart)))
+            var response = AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey), header, DateHeader, VersionHeader, null, 0, "GET", false, this.additionalHeaders);
+            var entities = ParseResponse(response.Body);
+            if (entities.Count == 1)
             {
-                results = new Hashtable();
+                return entities[0] as Hashtable;
+            }
+            return null;
+        }
+
+        public ArrayList QueryTable(string tablename, string query)
+        {
+            if (query.IsNullOrEmpty())
+            {
+                query = "";
+            } 
+            else
+            {
+                query = "$filter=" + query.Replace(" ", "%20");
+            }
+            var header = CreateAuthorizationHeader(null, StringUtility.Format("/{0}/{1}()", AccountName, tablename));
+            var response = AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}()?{2}", AccountName, tablename, query), header, DateHeader, VersionHeader, null, 0, "GET", false, this.additionalHeaders);
+            return ParseResponse(response.Body);
+        }
+
+        private ArrayList ParseResponse(string xml)
+        {
+            var results = new ArrayList();
+            string entityToken = null;
+            var nextStart = 0;
+            while (null != (entityToken = NextToken(xml, "<m:properties>", "</m:properties>", nextStart, out nextStart)))
+            {
+                var currentObject = new Hashtable();
 
                 string propertyToken = null;
                 int nextPropertyStart = 0;
-                while (null != (propertyToken = NextToken(xml.Body, "<d:", "</d", nextPropertyStart, out nextPropertyStart)))
+                while (null != (propertyToken = NextToken(entityToken, "<d:", "</d", nextPropertyStart, out nextPropertyStart)))
                 {
                     var parts = propertyToken.Split('>');
                     if (parts.Length != 2) continue;
                     var rawvalue = parts[1];
                     var propertyName = parts[0].Split(' ')[0];
-                    
+
                     var _ = 0;
                     var type = NextToken(propertyToken, "m:type=\"", "\"", 0, out _);
                     if (null == type)
-                    { 
+                    {
                         type = "Edm.String";
                     }
+                    if (currentObject.Contains(propertyName)) continue;
                     switch (type)
                     {
                         case "Edm.String":
-                            results.Add(propertyName, rawvalue);
+                            currentObject.Add(propertyName, rawvalue);
                             break;
                         case "Edm.DateTime":
                             // not supported
                             break;
                         case "Edm.Int64":
-                            results.Add(propertyName, Int64.Parse(rawvalue));
+                            currentObject.Add(propertyName, Int64.Parse(rawvalue));
                             break;
                         case "Edm.Int32":
-                            results.Add(propertyName, Int32.Parse(rawvalue));
+                            currentObject.Add(propertyName, Int32.Parse(rawvalue));
                             break;
                         case "Edm.Double":
-                            results.Add(propertyName, Double.Parse(rawvalue));
+                            currentObject.Add(propertyName, Double.Parse(rawvalue));
                             break;
                         case "Edm.Boolean":
-                            results.Add(propertyName, rawvalue == "true");
+                            currentObject.Add(propertyName, rawvalue == "true");
                             break;
                         case "Edm.Guid":
                             // not supported
                             break;
                     }
                 }
+                results.Add(currentObject);
             }
             return results;
         }
@@ -242,6 +269,7 @@ namespace netmfazurestorage.Table
             if (start < 0) return null;
             start += startToken.Length;
             var end = xml.IndexOf(endToken, start);
+            if (end < 0) return null;
             nextStart = end + endToken.Length;
             return xml.Substring(start, end - start);           
         }
@@ -272,5 +300,7 @@ namespace netmfazurestorage.Table
 
         #endregion
     }
+
+
 }
 

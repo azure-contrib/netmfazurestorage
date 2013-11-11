@@ -38,14 +38,7 @@ namespace netmfazurestorage.Http
                     using (var responseStream = response.GetResponseStream())
                     using (var reader = new StreamReader(responseStream))
                     {
-                        char[] bytes = new char[(int)responseStream.Length];
-
-                        if (bytes.Length > 0)
-                        {
-                            reader.Read(bytes, 0, bytes.Length);
-
-                            responseBody = new string(bytes);
-                        }
+                        responseBody = reader.ReadToEnd();
                     }
                 }
             }
