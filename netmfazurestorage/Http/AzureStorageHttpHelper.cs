@@ -11,6 +11,19 @@ namespace netmfazurestorage.Http
     /// </summary>
     public static class AzureStorageHttpHelper
     {
+        /// <summary>
+        /// Sends a Web Request prepared for Azure Storage
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="authHeader"></param>
+        /// <param name="dateHeader"></param>
+        /// <param name="versionHeader"></param>
+        /// <param name="fileBytes"></param>
+        /// <param name="contentLength"></param>
+        /// <param name="httpVerb"></param>
+        /// <param name="expect100Continue"></param>
+        /// <param name="additionalHeaders"></param>
+        /// <returns></returns>
         public static BasicHttpResponse SendWebRequest(string url, string authHeader, string dateHeader, string versionHeader, byte[] fileBytes = null, int contentLength = 0, string httpVerb = "GET", bool expect100Continue = false, Hashtable additionalHeaders = null)
         {
             string responseBody = "";
