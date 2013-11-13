@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -6,6 +7,7 @@ using System.Text;
 using ElzeKool;
 using Microsoft.SPOT;
 using NetMf.CommonExtensions;
+using netmfazurestorage.Http;
 
 namespace netmfazurestorage.Blob
 {
@@ -38,8 +40,10 @@ namespace netmfazurestorage.Blob
 
                 try
                 {
-                    var success = SendWebRequest(deploymentPath, authHeader, ms, contentLength);
-                    if (!success)
+                    var blobTypeHeaders = new Hashtable();
+                    blobTypeHeaders.Add("x-ms-blob-type", "BlockBlob");
+                    var response = AzureStorageHttpHelper.SendWebRequest(deploymentPath, authHeader, DateHeader, VersionHeader, ms, contentLength, "GET", true, blobTypeHeaders);
+                    if (response.StatusCode != HttpStatusCode.Accepted)
                     {
                         Debug.Print("Deployment Path was " + deploymentPath);
                         Debug.Print("Auth Header was " + authHeader);
@@ -52,7 +56,7 @@ namespace netmfazurestorage.Blob
                         Debug.Print("Auth Header was " + authHeader);
                     }
 
-                    return success;
+                    return response.StatusCode == HttpStatusCode.Accepted;
                 }
                 catch (WebException wex)
                 {
