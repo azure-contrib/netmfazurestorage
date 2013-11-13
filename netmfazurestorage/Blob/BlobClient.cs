@@ -24,7 +24,7 @@ namespace netmfazurestorage.Blob
             _accountKey = accountKey;
         }
 
-        internal bool PutBlob(string containerName, string blobName, string fileNamePath)
+        internal bool PutBlockBlob(string containerName, string blobName, string fileNamePath)
         {
             try
             {
@@ -92,76 +92,6 @@ namespace netmfazurestorage.Blob
                 }
             }
             return ms;
-        }
-
-        private HttpWebRequest PrepareRequest(string url, string authHeader, byte[] fileBytes = null,
-                                              int contentLength = 0)
-        {
-            var uri = new Uri(url);
-            var request = (HttpWebRequest)WebRequest.Create(uri);
-            request.Method = HttpVerb;
-            request.ContentLength = contentLength;
-            request.Headers.Add("x-ms-date", DateHeader);
-            request.Headers.Add("x-ms-version", VersionHeader);
-            request.Headers.Add("Authorization", authHeader);
-            request.Expect = "100-continue";
-
-            if (contentLength != 0)
-            {
-                request.Headers.Add("x-ms-blob-type", "BlockBlob");
-                request.GetRequestStream().Write(fileBytes, 0, fileBytes.Length);
-            }
-            return request;
-        }
-
-        protected bool SendWebRequest(string url, string authHeader, byte[] fileBytes = null, int contentLength = 0)
-        {
-            HttpWebRequest request = PrepareRequest(url, authHeader, fileBytes, contentLength);
-            try
-            {
-                HttpWebResponse response;
-                using (response = (HttpWebResponse)request.GetResponse())
-                {
-                    if (response.StatusCode == HttpStatusCode.Created)
-                    {
-                        Debug.Print("Container or blob has been created! " + url);
-                        return true;
-                    }
-                    else if (response.StatusCode == HttpStatusCode.Accepted)
-                    {
-                        Debug.Print("Container or blob action has been completed");
-                        return true;
-                    }//this code smell results from the slight difference in throwing between netmf and .net
-                    else if (response.StatusCode == HttpStatusCode.Forbidden)
-                    {
-                        throw new WebException("Forbidden", (WebExceptionStatus) HttpStatusCode.Forbidden);
-                    }
-                    else
-                    {
-                        var responseBody = "";
-                        using (StreamReader sr = new StreamReader(response.GetResponseStream()))
-                        {
-                            responseBody = sr.ReadToEnd();
-                        }
-
-                        Debug.Print("Error Status " + response.StatusCode);
-                        Debug.Print(responseBody);
-                        return false;
-                    }
-                }
-            }
-            catch (WebException ex)
-            {
-                if (((HttpWebResponse)ex.Response).StatusCode == HttpStatusCode.Conflict)
-                {
-                    Debug.Print("container or blob already exists!");
-                }
-                if (((HttpWebResponse)ex.Response).StatusCode == HttpStatusCode.Forbidden)
-                {
-                    Debug.Print("problem with signature!");
-                }
-                return false;
-            }
         }
 
         protected string CreateAuthorizationHeader(String canResource, string options = "", int contentLength = 0)

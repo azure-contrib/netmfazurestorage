@@ -130,7 +130,7 @@ namespace netmfazurestorage
                 {
                     var filename = StringUtility.Format("{0}.csv", time.ToString("yyyyMMddhhmmss"));
                     Debug.Print(filename);
-                    var success = _blobClient.PutBlob("demo",
+                    var success = _blobClient.PutBlockBlob("demo",
                                                      filename,
                                                       "\\SD\\Data.csv");
 
