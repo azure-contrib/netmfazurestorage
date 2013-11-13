@@ -56,6 +56,15 @@ namespace NetMf.CommonExtensions
 
         }
 
+        public static bool IsNullOrEmpty(this string value)
+        {
+            return (value == null || value == "");
+        }
+
+        public static string Format(this string value, params string[] args)
+        {
+            return StringUtility.Format(value, args);
+        }
        
     }
 }

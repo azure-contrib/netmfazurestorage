@@ -17,20 +17,16 @@ namespace netmfazurestorage.Table
         public static string AccountKey;
         public static bool AttachFiddler;
 
-        #region constants
-
+        
         internal const string VersionHeader = "2011-08-18";
         internal const string ContentType = "application/atom+xml";
         private string DateHeader { get; set; }
 
-        #endregion
-
-        #region Properties
+        private Hashtable additionalHeaders;
 
         internal DateTime InstanceDate { get; set; }
 
-        #endregion
-
+        
         protected byte[] GetBodyBytesAndLength(string body, out int contentLength)
         {
             var content = Encoding.UTF8.GetBytes(body);
@@ -44,6 +40,10 @@ namespace netmfazurestorage.Table
             AccountName = accountName;
             AccountKey = accountKey;
             DateHeader = DateTime.UtcNow.ToString("R");
+            additionalHeaders = new Hashtable();
+            additionalHeaders.Add("DataServiceVersion", "1.0;NetFx");
+            additionalHeaders.Add("MaxDataServiceVersion", "1.0;NetFx");
+            additionalHeaders.Add("Content-Type", ContentType);
         }
 
         public void CreateTable(string tableName)
@@ -62,8 +62,8 @@ namespace netmfazurestorage.Table
 
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
-            string header = CreateAuthorizationHeader(payload, ContentType, "/" + AccountName + "/Tables()");
-            AzureStorageHttpHelper.SendWebRequest("http://" + AccountName + ".table.core.windows.net/Tables()", header, DateHeader, VersionHeader, payload, contentLength);
+            string header = CreateAuthorizationHeader(payload, "/" + AccountName + "/Tables()");
+            AzureStorageHttpHelper.SendWebRequest("http://" + AccountName + ".table.core.windows.net/Tables()", header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders);
         }
 
         [Obsolete("Please use the InsertTableEntity method; this AddTableEntityForTemperature method will be removed in a future release.", false)]
@@ -87,8 +87,8 @@ namespace netmfazurestorage.Table
 
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
-            string header = CreateAuthorizationHeader(payload, ContentType, StringUtility.Format("/{0}/{1}", AccountName, tablename));
-            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength);
+            string header = CreateAuthorizationHeader(payload, StringUtility.Format("/{0}/{1}", AccountName, tablename));
+            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength, "GET", false, this.additionalHeaders);
         }
 
         public void InsertTableEntity(string tablename, string partitionKey, string rowKey, DateTime timeStamp, System.Collections.ArrayList tableEntityProperties)
@@ -110,8 +110,8 @@ namespace netmfazurestorage.Table
 
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
-            string header = CreateAuthorizationHeader(payload, ContentType, StringUtility.Format("/{0}/{1}", AccountName, tablename));
-            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength);
+            string header = CreateAuthorizationHeader(payload, StringUtility.Format("/{0}/{1}", AccountName, tablename));
+            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders);
         }
 
         public void InsertTableEntity_Experimental(string tablename, string partitionKey, string rowKey, DateTime timeStamp, Hashtable tableEntityProperties)
@@ -133,8 +133,8 @@ namespace netmfazurestorage.Table
 
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
-            string header = CreateAuthorizationHeader(payload, ContentType, StringUtility.Format("/{0}/{1}", AccountName, tablename));
-            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength);
+            string header = CreateAuthorizationHeader(payload, StringUtility.Format("/{0}/{1}", AccountName, tablename));
+            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders);
         }
 
         private string GetTableXml(ArrayList tableEntityProperties)
@@ -177,55 +177,82 @@ namespace netmfazurestorage.Table
 
         public Hashtable QueryTable(string tablename, string partitionKey, string rowKey)
         {
-            var header = CreateAuthorizationHeader(null, ContentType, StringUtility.Format("/{0}/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey));
-            var xml = AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey), header, DateHeader, VersionHeader, null, 0, "GET");
-            string token = null;
-            Hashtable results = null;
-            var nextStart = 0;
-            while (null != (token = NextToken(xml.Body, "<m:properties>", "</m:properties>", nextStart, out nextStart)))
+            var header = CreateAuthorizationHeader(null, StringUtility.Format("/{0}/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey));
+            var response = AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}(PartitionKey='{2}',RowKey='{3}')", AccountName, tablename, partitionKey, rowKey), header, DateHeader, VersionHeader, null, 0, "GET", false, this.additionalHeaders);
+            var entities = ParseResponse(response.Body);
+            if (entities.Count == 1)
             {
-                results = new Hashtable();
+                return entities[0] as Hashtable;
+            }
+            return null;
+        }
+
+        public ArrayList QueryTable(string tablename, string query)
+        {
+            if (query.IsNullOrEmpty())
+            {
+                query = "";
+            } 
+            else
+            {
+                query = "$filter=" + query.Replace(" ", "%20");
+            }
+            var header = CreateAuthorizationHeader(null, StringUtility.Format("/{0}/{1}()", AccountName, tablename));
+            var response = AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}()?{2}", AccountName, tablename, query), header, DateHeader, VersionHeader, null, 0, "GET", false, this.additionalHeaders);
+            return ParseResponse(response.Body);
+        }
+
+        private ArrayList ParseResponse(string xml)
+        {
+            var results = new ArrayList();
+            string entityToken = null;
+            var nextStart = 0;
+            while (null != (entityToken = NextToken(xml, "<m:properties>", "</m:properties>", nextStart, out nextStart)))
+            {
+                var currentObject = new Hashtable();
 
                 string propertyToken = null;
                 int nextPropertyStart = 0;
-                while (null != (propertyToken = NextToken(xml.Body, "<d:", "</d", nextPropertyStart, out nextPropertyStart)))
+                while (null != (propertyToken = NextToken(entityToken, "<d:", "</d", nextPropertyStart, out nextPropertyStart)))
                 {
                     var parts = propertyToken.Split('>');
                     if (parts.Length != 2) continue;
                     var rawvalue = parts[1];
                     var propertyName = parts[0].Split(' ')[0];
-                    
+
                     var _ = 0;
                     var type = NextToken(propertyToken, "m:type=\"", "\"", 0, out _);
                     if (null == type)
-                    { 
+                    {
                         type = "Edm.String";
                     }
+                    if (currentObject.Contains(propertyName)) continue;
                     switch (type)
                     {
                         case "Edm.String":
-                            results.Add(propertyName, rawvalue);
+                            currentObject.Add(propertyName, rawvalue);
                             break;
                         case "Edm.DateTime":
                             // not supported
                             break;
                         case "Edm.Int64":
-                            results.Add(propertyName, Int64.Parse(rawvalue));
+                            currentObject.Add(propertyName, Int64.Parse(rawvalue));
                             break;
                         case "Edm.Int32":
-                            results.Add(propertyName, Int32.Parse(rawvalue));
+                            currentObject.Add(propertyName, Int32.Parse(rawvalue));
                             break;
                         case "Edm.Double":
-                            results.Add(propertyName, Double.Parse(rawvalue));
+                            currentObject.Add(propertyName, Double.Parse(rawvalue));
                             break;
                         case "Edm.Boolean":
-                            results.Add(propertyName, rawvalue == "true");
+                            currentObject.Add(propertyName, rawvalue == "true");
                             break;
                         case "Edm.Guid":
                             // not supported
                             break;
                     }
                 }
+                results.Add(currentObject);
             }
             return results;
         }
@@ -242,6 +269,7 @@ namespace netmfazurestorage.Table
             if (start < 0) return null;
             start += startToken.Length;
             var end = xml.IndexOf(endToken, start);
+            if (end < 0) return null;
             nextStart = end + endToken.Length;
             return xml.Substring(start, end - start);           
         }
@@ -258,7 +286,7 @@ namespace netmfazurestorage.Table
                Date + "\n" +
                CanonicalizedResource;*/
         // Signature=Base64(HMAC-SHA256(UTF8(StringToSign)))
-        protected string CreateAuthorizationHeader(byte[] content, string contentType, string canonicalResource)
+        protected string CreateAuthorizationHeader(byte[] content, string canonicalResource)
         {
             //string toSign = String.Format("{0}\n{1}\n{2}\n{3}\n{4}",
             //                              HttpVerb, hash, contentType, InstanceDate, canonicalResource);
@@ -272,5 +300,7 @@ namespace netmfazurestorage.Table
 
         #endregion
     }
+
+
 }
 

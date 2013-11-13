@@ -21,6 +21,7 @@ namespace netmfazurestorage.Tests
             this.TestInsertDouble();
             this.TestInsertExperimental();
             this.QuerySingleEntity();
+            this.QueryMultipleEntities();
         }
 
         private void TestCreate()
@@ -91,6 +92,13 @@ namespace netmfazurestorage.Tests
         {
             var output = this.client.QueryTable("netmftest", "2", "796440bd-95f6-0626-975b-764e6902844d");
             Debug.Assert(null != output);
+        }
+
+        public void QueryMultipleEntities()
+        {
+            var output = this.client.QueryTable("netmftest", "PartitionKey eq '2'");
+            Debug.Assert(null != output);
+            Debug.Assert(output.Count > 0);
         }
 
     }

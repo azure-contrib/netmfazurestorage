@@ -51,14 +51,7 @@ namespace netmfazurestorage.Http
                     using (var responseStream = response.GetResponseStream())
                     using (var reader = new StreamReader(responseStream))
                     {
-                        char[] bytes = new char[(int)responseStream.Length];
-
-                        if (bytes.Length > 0)
-                        {
-                            reader.Read(bytes, 0, bytes.Length);
-
-                            responseBody = new string(bytes);
-                        }
+                        responseBody = reader.ReadToEnd();
                     }
                 }
             }
@@ -89,7 +82,7 @@ namespace netmfazurestorage.Http
         /// <param name="contentLength"></param>
         /// <param name="httpVerb"></param>
         /// <returns></returns>
-        private static HttpWebRequest PrepareRequest(string url, string authHeader, string dateHeader, string versionHeader, byte[] fileBytes = null, int contentLength = 0, string httpVerb = "GET", bool expect100Continue = false, Hashtable additionalHeaders = null)
+        private static HttpWebRequest PrepareRequest(string url, string authHeader, string dateHeader, string versionHeader, byte[] fileBytes , int contentLength, string httpVerb, bool expect100Continue = false, Hashtable additionalHeaders = null)
         {
             var uri = new Uri(url);
             var request = (HttpWebRequest)WebRequest.Create(uri);
