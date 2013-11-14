@@ -87,7 +87,7 @@ namespace netmfazurestorage.Table
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
             string header = CreateAuthorizationHeader(payload, StringUtility.Format("/{0}/{1}", _account.AccountName, tablename));
-            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", _account.AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength, "GET", false, this.additionalHeaders);
+            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("{0}/{1}", _account.UriEndpoints["Table"], tablename), header, DateHeader, VersionHeader, payload, contentLength, "GET", false, this.additionalHeaders);
         }
 
         public void InsertTableEntity(string tablename, string partitionKey, string rowKey, DateTime timeStamp, System.Collections.ArrayList tableEntityProperties)
@@ -110,7 +110,7 @@ namespace netmfazurestorage.Table
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
             string header = CreateAuthorizationHeader(payload, StringUtility.Format("/{0}/{1}", _account.AccountName, tablename));
-            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", _account.AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders);
+            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("{0}/{1}", _account.UriEndpoints["Table"], tablename), header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders);
         }
 
         public void InsertTableEntity_Experimental(string tablename, string partitionKey, string rowKey, DateTime timeStamp, Hashtable tableEntityProperties)
@@ -133,7 +133,7 @@ namespace netmfazurestorage.Table
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
             string header = CreateAuthorizationHeader(payload, StringUtility.Format("/{0}/{1}", _account.AccountName, tablename));
-            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}", _account.AccountName, tablename), header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders);
+            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("{0}/{1}", _account.UriEndpoints["Table"], tablename), header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders);
         }
 
         private string GetTableXml(ArrayList tableEntityProperties)
@@ -197,7 +197,7 @@ namespace netmfazurestorage.Table
                 query = "$filter=" + query.Replace(" ", "%20");
             }
             var header = CreateAuthorizationHeader(null, StringUtility.Format("/{0}/{1}()", _account.AccountName, tablename));
-            var response = AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("http://{0}.table.core.windows.net/{1}()?{2}", _account.AccountName, tablename, query), header, DateHeader, VersionHeader, null, 0, "GET", false, this.additionalHeaders);
+            var response = AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("{0}/{1}()?{2}", _account.UriEndpoints["Table"], tablename, query), header, DateHeader, VersionHeader, null, 0, "GET", false, this.additionalHeaders);
             return ParseResponse(response.Body);
         }
 
