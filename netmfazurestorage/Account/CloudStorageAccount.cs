@@ -1,4 +1,5 @@
-﻿using NetMf.CommonExtensions;
+﻿using System;
+using NetMf.CommonExtensions;
 
 namespace netmfazurestorage.Account
 {
@@ -18,6 +19,11 @@ namespace netmfazurestorage.Account
         public CloudStorageAccount(string accountName, string accountKey) : this (accountName,accountKey,StringUtility.Format("http://{0}.blob.core.windows.net/", accountName))
         {
             
+        }
+
+        public static CloudStorageAccount Parse(string connectionString)
+        {
+            throw new NotImplementedException();
         }
     }
 }
