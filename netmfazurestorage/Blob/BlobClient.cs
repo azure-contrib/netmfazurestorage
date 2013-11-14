@@ -6,21 +6,20 @@ using System.Text;
 using ElzeKool;
 using Microsoft.SPOT;
 using NetMf.CommonExtensions;
+using netmfazurestorage.Account;
 using netmfazurestorage.Http;
 
 namespace netmfazurestorage.Blob
 {
     internal class BlobClient
     {
-        private string _accountName;
-        private string _accountKey;
+        private readonly CloudStorageAccount _account;
 
-        internal BlobClient(string accountName, string accountKey)
+        internal BlobClient(CloudStorageAccount account)
         {
+            _account = account;
             HttpVerb = "PUT";
             DateHeader = DateTime.Now.ToString("R");
-            _accountName = accountName;
-            _accountKey = accountKey;
         }
 
         internal bool PutBlockBlob(string containerName, string blobName, string fileNamePath)
@@ -28,12 +27,12 @@ namespace netmfazurestorage.Blob
             try
             {
                 string deploymentPath =
-                    StringUtility.Format("http://{0}.blob.core.windows.net/{1}/{2}", _accountName, containerName,
+                    StringUtility.Format("http://{0}.blob.core.windows.net/{1}/{2}", _account.AccountName, containerName,
                                          blobName);
                 int contentLength;
                 byte[] ms = GetPackageFileBytesAndLength(fileNamePath, out contentLength);
 
-                string canResource = StringUtility.Format("/{0}/{1}/{2}", _accountName, containerName, blobName);
+                string canResource = StringUtility.Format("/{0}/{1}/{2}", _account.AccountName, containerName, blobName);
 
                 string authHeader = CreateAuthorizationHeader(canResource, "\nx-ms-blob-type:BlockBlob", contentLength);
 
@@ -100,10 +99,10 @@ namespace netmfazurestorage.Blob
 
             string signature;
 
-            var hmacBytes = SHA.computeHMAC_SHA256(Convert.FromBase64String(_accountKey), Encoding.UTF8.GetBytes(toSign));
+            var hmacBytes = SHA.computeHMAC_SHA256(Convert.FromBase64String(_account.AccountKey), Encoding.UTF8.GetBytes(toSign));
             signature = Convert.ToBase64String(hmacBytes).Replace("!", "+").Replace("*", "/");;
            
-            return "SharedKey " + _accountName + ":" + signature;
+            return "SharedKey " + _account.AccountName + ":" + signature;
         }
 
         internal const string VersionHeader = "2011-08-18";

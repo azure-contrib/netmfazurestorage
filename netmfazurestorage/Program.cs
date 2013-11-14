@@ -7,6 +7,7 @@ using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
 using Microsoft.SPOT.Net.NetworkInformation;
 using NetMf.CommonExtensions;
+using netmfazurestorage.Account;
 using netmfazurestorage.Blob;
 using netmfazurestorage.NTP;
 using netmfazurestorage.Table;
@@ -52,7 +53,7 @@ namespace netmfazurestorage
                 Utility.SetLocalTime(networkTime);
 
                 _macAddress = GetMAC();
-                _blobClient = new BlobClient(AccountName, AccountKey);
+                _blobClient = new BlobClient(new CloudStorageAccount(AccountName, AccountKey));
                 _tableClient = new TableClient(AccountName, AccountKey);
                 _tableClient.CreateTable("netmfdata");
 
