@@ -15,6 +15,10 @@ namespace netmfazurestorage.Account
             AccountName = accountName;
             AccountKey = accountKey;
             UriEndpoints = uriEndpoints;
+
+            //checkUriEndpoints
+            //must be 3 known keys (Blob, Queue, Table) 
+            //must always end with a trailing slash
         }
 
         public CloudStorageAccount(string accountName, string accountKey) : this (accountName,accountKey,GetDefaultUriEndpoints(accountName))

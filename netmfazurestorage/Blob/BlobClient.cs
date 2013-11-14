@@ -27,7 +27,7 @@ namespace netmfazurestorage.Blob
             try
             {
                 string deploymentPath =
-                    StringUtility.Format("http://{0}.blob.core.windows.net/{1}/{2}", _account.AccountName, containerName,
+                    StringUtility.Format("{0}{1}/{2}", _account.UriEndpoints["Blob"], containerName,
                                          blobName);
                 int contentLength;
                 byte[] ms = GetPackageFileBytesAndLength(fileNamePath, out contentLength);
