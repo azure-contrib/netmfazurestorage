@@ -18,7 +18,7 @@ namespace netmfazurestorage.Account
 
             //checkUriEndpoints
             //must be 3 known keys (Blob, Queue, Table) 
-            //must always end with a trailing slash
+            //must not end with a trailing slash
         }
 
         public CloudStorageAccount(string accountName, string accountKey) : this (accountName,accountKey,GetDefaultUriEndpoints(accountName))
@@ -29,9 +29,9 @@ namespace netmfazurestorage.Account
         private static Hashtable GetDefaultUriEndpoints(string accountName)
         {
             var defaults = new Hashtable(3);
-            defaults.Add("Blob", StringUtility.Format("http://{0}.blob.core.windows.net/", accountName));
-            defaults.Add("Queue", StringUtility.Format("http://{0}.queue.core.windows.net/", accountName));
-            defaults.Add("Table", StringUtility.Format("http://{0}.table.core.windows.net/", accountName));
+            defaults.Add("Blob", StringUtility.Format("http://{0}.blob.core.windows.net", accountName));
+            defaults.Add("Queue", StringUtility.Format("http://{0}.queue.core.windows.net", accountName));
+            defaults.Add("Table", StringUtility.Format("http://{0}.table.core.windows.net", accountName));
             return defaults;
         }
 

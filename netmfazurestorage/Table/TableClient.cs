@@ -62,7 +62,7 @@ namespace netmfazurestorage.Table
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
             string header = CreateAuthorizationHeader(payload, "/" + _account.AccountName + "/Tables()");
-            AzureStorageHttpHelper.SendWebRequest(_account.UriEndpoints["Table"] + "Tables()", header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders);
+            AzureStorageHttpHelper.SendWebRequest(_account.UriEndpoints["Table"] + "/Tables()", header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders);
         }
 
         [Obsolete("Please use the InsertTableEntity method; this AddTableEntityForTemperature method will be removed in a future release.", false)]
@@ -177,7 +177,7 @@ namespace netmfazurestorage.Table
         public Hashtable QueryTable(string tablename, string partitionKey, string rowKey)
         {
             var header = CreateAuthorizationHeader(null, StringUtility.Format("/{0}/{1}(PartitionKey='{2}',RowKey='{3}')", _account.AccountName, tablename, partitionKey, rowKey));
-            var response = AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("{0}{1}(PartitionKey='{2}',RowKey='{3}')", _account.UriEndpoints["Table"], tablename, partitionKey, rowKey), header, DateHeader, VersionHeader, null, 0, "GET", false, this.additionalHeaders);
+            var response = AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("{0}/{1}(PartitionKey='{2}',RowKey='{3}')", _account.UriEndpoints["Table"], tablename, partitionKey, rowKey), header, DateHeader, VersionHeader, null, 0, "GET", false, this.additionalHeaders);
             var entities = ParseResponse(response.Body);
             if (entities.Count == 1)
             {
