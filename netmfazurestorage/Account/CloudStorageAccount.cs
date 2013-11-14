@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using NetMf.CommonExtensions;
 
 namespace netmfazurestorage.Account
@@ -7,18 +8,27 @@ namespace netmfazurestorage.Account
     {
         public string AccountName { get; set; }
         public string AccountKey { get; set; }
-        public string UriEndpoints { get; set; }
+        public Hashtable UriEndpoints { get; set; }
 
-        public CloudStorageAccount(string accountName, string accountKey, string uriEndpoints)
+        public CloudStorageAccount(string accountName, string accountKey, Hashtable uriEndpoints)
         {
             AccountName = accountName;
             AccountKey = accountKey;
             UriEndpoints = uriEndpoints;
         }
 
-        public CloudStorageAccount(string accountName, string accountKey) : this (accountName,accountKey,StringUtility.Format("http://{0}.blob.core.windows.net/", accountName))
+        public CloudStorageAccount(string accountName, string accountKey) : this (accountName,accountKey,GetDefaultUriEndpoints(accountName))
         {
             
+        }
+
+        private static Hashtable GetDefaultUriEndpoints(string accountName)
+        {
+            var defaults = new Hashtable(3);
+            defaults.Add("Blob", StringUtility.Format("http://{0}.blob.core.windows.net/", accountName));
+            defaults.Add("Queue", StringUtility.Format("http://{0}.queue.core.windows.net/", accountName));
+            defaults.Add("Table", StringUtility.Format("http://{0}.table.core.windows.net/", accountName));
+            return defaults;
         }
 
         public static CloudStorageAccount Parse(string connectionString)

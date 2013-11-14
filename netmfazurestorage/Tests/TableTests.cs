@@ -1,4 +1,5 @@
 using System;
+using netmfazurestorage.Account;
 using netmfazurestorage.Table;
 using System.Collections;
 using Microsoft.SPOT;
@@ -11,7 +12,7 @@ namespace netmfazurestorage.Tests
 
         public TableTests(string account, string key)
         {
-            this.client = new TableClient(account, key);
+            this.client = new TableClient(new CloudStorageAccount(account,key));
         }
 
         public void Run()

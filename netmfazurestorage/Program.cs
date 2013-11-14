@@ -54,7 +54,7 @@ namespace netmfazurestorage
 
                 _macAddress = GetMAC();
                 _blobClient = new BlobClient(new CloudStorageAccount(AccountName, AccountKey));
-                _tableClient = new TableClient(AccountName, AccountKey);
+                _tableClient = new TableClient(new CloudStorageAccount(AccountName, AccountKey));
                 _tableClient.CreateTable("netmfdata");
 
                 _onBoardButton = new InterruptPort(Cpu.Pin.GPIO_NONE, true,
