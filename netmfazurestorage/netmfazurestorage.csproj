@@ -35,6 +35,7 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
+    <Compile Include="Account\CloudStorageAccount.cs" />
     <Compile Include="Blob\BlobClient.cs" />
     <Compile Include="HMAC\SHA.cs" />
     <Compile Include="Http\BasicHttpResponse.cs" />
