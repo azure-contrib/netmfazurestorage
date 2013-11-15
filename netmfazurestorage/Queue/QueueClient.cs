@@ -107,7 +107,7 @@ namespace netmfazurestorage.Queue
             if (peekOnly)
             {
                 url += "?peekonly=true";
-                can += "?peekonly=true";
+                can += "\npeekonly:true";
             }
             string auth = CreateAuthorizationHeader(can, "", 0, true);
             
