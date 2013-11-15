@@ -102,13 +102,14 @@ namespace netmfazurestorage.Queue
         public QueueMessageWrapper RetrieveQueueMessage(string queueName, bool peekOnly)
         {
             string can = StringUtility.Format("/{0}/{1}/messages", _account.AccountName, queueName);
-            string auth = CreateAuthorizationHeader(can, "", 0, true);
             string url = StringUtility.Format("{0}/{1}/messages", _account.UriEndpoints["Queue"], queueName);
 
             if (peekOnly)
             {
                 url += "?peekonly=true";
+                can += "?peekonly=true";
             }
+            string auth = CreateAuthorizationHeader(can, "", 0, true);
             
             var response = AzureStorageHttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader);
 
