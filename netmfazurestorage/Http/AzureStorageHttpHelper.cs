@@ -35,6 +35,13 @@ namespace netmfazurestorage.Http
                 using (response = (HttpWebResponse)request.GetResponse())
                 {
                     responseStatusCode = response.StatusCode;
+                    
+                    using (var responseStream = response.GetResponseStream())
+                    using (var reader = new StreamReader(responseStream))
+                    {
+                        responseBody = reader.ReadToEnd();
+                    }
+
                     if (response.StatusCode == HttpStatusCode.Created)
                     {
                         Debug.Print("Asset has been created!");
@@ -48,11 +55,7 @@ namespace netmfazurestorage.Http
                         throw new WebException("Forbidden", null, WebExceptionStatus.ServerProtocolViolation, response);
                     }
 
-                    using (var responseStream = response.GetResponseStream())
-                    using (var reader = new StreamReader(responseStream))
-                    {
-                        responseBody = reader.ReadToEnd();
-                    }
+                    
                 }
             }
             catch (WebException ex)
