@@ -1,6 +1,7 @@
 using System;
 using Microsoft.SPOT;
 using NetMf.CommonExtensions;
+using netmfazurestorage.Account;
 using netmfazurestorage.Queue;
 
 namespace netmfazurestorage.Tests
@@ -11,7 +12,7 @@ namespace netmfazurestorage.Tests
 
         public QueueTests(string accountName, string accountKey)
         {
-            _queueClient = new QueueClient(accountName, accountKey);
+            _queueClient = new QueueClient(new CloudStorageAccount(accountName, accountKey));
         }
 
         public void Run()

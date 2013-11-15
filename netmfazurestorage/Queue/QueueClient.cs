@@ -5,6 +5,7 @@ using System.Text;
 using ElzeKool;
 using Microsoft.SPOT;
 using NetMf.CommonExtensions;
+using netmfazurestorage.Account;
 using netmfazurestorage.Http;
 using System.Collections;
 
@@ -12,6 +13,8 @@ namespace netmfazurestorage.Queue
 {
     public class QueueClient
     {
+        private readonly CloudStorageAccount _account;
+
         #region constants
 
         internal const string HttpVerbPut = "PUT";
@@ -23,10 +26,6 @@ namespace netmfazurestorage.Queue
         #endregion
 
         #region Properties
-
-        public static string AccountName { get; set; }
-        public static string AccountKey { get; set; }
-
         internal string DateHeader { get; set; }
 
         #endregion
@@ -37,10 +36,9 @@ namespace netmfazurestorage.Queue
         /// </summary>
         /// <param name="accountName"></param>
         /// <param name="accountKey"></param>
-        public QueueClient(string accountName, string accountKey)
+        public QueueClient(CloudStorageAccount account)
         {
-            AccountName = accountName;
-            AccountKey = accountKey;
+            _account = account;
             DateHeader = DateTime.UtcNow.ToString("R");
         }
 
@@ -58,18 +56,18 @@ namespace netmfazurestorage.Queue
                 httpVerb, contentL, DateHeader, VersionHeader, canResource, options);
 
             string signature;
-            var hmacBytes = SHA.computeHMAC_SHA256(Convert.FromBase64String(AccountKey), Encoding.UTF8.GetBytes(toSign));
+            var hmacBytes = SHA.computeHMAC_SHA256(Convert.FromBase64String(_account.AccountKey), Encoding.UTF8.GetBytes(toSign));
             signature = Convert.ToBase64String(hmacBytes).Replace("!", "+").Replace("*", "/"); ;
 
 
-            return "SharedKey " + AccountName + ":" + signature;
+            return "SharedKey " + _account.AccountName + ":" + signature;
         }
 
         public void CreateQueue(string queueName)
         {
             //PUT https://myaccount.queue.core.windows.net/myqueue HTTP/1.1
-            var url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}", AccountName, queueName);
-            string can = StringUtility.Format("/{0}/{1}", AccountName, queueName);
+            var url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}", _account.AccountName, queueName);
+            string can = StringUtility.Format("/{0}/{1}", _account.AccountName, queueName);
             var auth = CreateAuthorizationHeader(can, "", 0, true, "PUT");
             AzureStorageHttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader, fileBytes: null, contentLength: 0, httpVerb: "PUT");
         }
@@ -81,9 +79,9 @@ namespace netmfazurestorage.Queue
             string messageXml = StringUtility.Format("<QueueMessage><MessageText>{0}</MessageText></QueueMessage>",
                                                      Convert.ToBase64String(Encoding.UTF8.GetBytes(message)));
             byte[] content = GetXmlBytesAndLength(messageXml, out length);
-            string can = StringUtility.Format("/{0}/{1}/messages", AccountName, queueName);
+            string can = StringUtility.Format("/{0}/{1}/messages", _account.AccountName, queueName);
             string auth = CreateAuthorizationHeader(can, "", length, false, "POST");
-            string url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}/messages", AccountName, queueName);
+            string url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}/messages", _account.AccountName, queueName);
             AzureStorageHttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader, content, length, "POST");
 
         }
@@ -93,9 +91,9 @@ namespace netmfazurestorage.Queue
 
             // GET http://myaccount.queue.core.windows.net/netmfdata/messages
 
-            string can = StringUtility.Format("/{0}/{1}/messages", AccountName, queueName);
+            string can = StringUtility.Format("/{0}/{1}/messages", _account.AccountName, queueName);
             string auth = CreateAuthorizationHeader(can, "", 0, true);
-            string url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}/messages", AccountName, queueName);
+            string url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}/messages", _account.AccountName, queueName);
             var response = AzureStorageHttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader);
 
             if (response.Body == null)
@@ -134,12 +132,12 @@ namespace netmfazurestorage.Queue
         {
 
             // DELETE http://myaccount.queue.core.windows.net/myqueue/messages/messageid?popreceipt=string-value
-            string can = StringUtility.Format("/{0}/{3}/messages/{2}\npopreceipt:{1}", AccountName, popReceipt,
+            string can = StringUtility.Format("/{0}/{3}/messages/{2}\npopreceipt:{1}", _account.AccountName, popReceipt,
                                               messageId, queueName);
             string auth = CreateAuthorizationHeader(can, "", 0, true, "DELETE");
             string url =
                 StringUtility.Format("http://{0}.queue.core.windows.net/{3}/messages/{2}?popreceipt={1}",
-                                     AccountName, popReceipt, messageId, queueName);
+                                     _account.AccountName, popReceipt, messageId, queueName);
             AzureStorageHttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader, null, 0, "DELETE");
 
         }
@@ -147,8 +145,8 @@ namespace netmfazurestorage.Queue
         public void DeleteQueue(string queueName)
         {
             //DELETE https://myaccount.queue.core.windows.net/myqueue HTTP/1.1
-            var url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}", AccountName, queueName);
-            string can = StringUtility.Format("/{0}/{1}", AccountName, queueName);
+            var url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}", _account.AccountName, queueName);
+            string can = StringUtility.Format("/{0}/{1}", _account.AccountName, queueName);
             var auth = CreateAuthorizationHeader(can, "", 0, true, "DELETE");
             AzureStorageHttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader, null, 0, "DELETE");
         }
