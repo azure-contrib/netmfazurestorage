@@ -86,14 +86,30 @@ namespace netmfazurestorage.Queue
 
         }
 
+        public QueueMessageWrapper PeekQueueMessage(string queueName)
+        {
+            // GET https://myaccount.queue.core.windows.net/myqueue/messages?peekonly=true
+
+            return RetrieveQueueMessage(queueName, true);
+        }
+
         public QueueMessageWrapper RetrieveQueueMessage(string queueName)
         {
-
             // GET http://myaccount.queue.core.windows.net/netmfdata/messages
 
+            return RetrieveQueueMessage(queueName, false);
+        }
+        public QueueMessageWrapper RetrieveQueueMessage(string queueName, bool peekOnly)
+        {
             string can = StringUtility.Format("/{0}/{1}/messages", _account.AccountName, queueName);
             string auth = CreateAuthorizationHeader(can, "", 0, true);
             string url = StringUtility.Format("http://{0}.queue.core.windows.net/{1}/messages", _account.AccountName, queueName);
+
+            if (peekOnly)
+            {
+                url += "?peekonly=true";
+            }
+            
             var response = AzureStorageHttpHelper.SendWebRequest(url, auth, DateHeader, VersionHeader);
 
             if (response.Body == null)
