@@ -20,9 +20,15 @@ namespace netmfazurestorage.Tests
             var testRun = Guid.NewGuid().ToString().Replace("-", "");//your tablename goes here!
             CreateQueue(testRun);
             CreateQueueMessage(testRun, "Skynet is READY");
+            var peeked = PeekQueueMessage(testRun);
             var message = RetrieveQueueMessage(testRun);
             DeleteQueueMessage(testRun, message.MessageId, message.PopReceipt);
             DeleteQueue(testRun);
+        }
+
+        private QueueMessageWrapper PeekQueueMessage(string queueName)
+        {
+            return _queueClient.PeekQueueMessage(queueName);
         }
 
         private void DeleteQueue(string queueName)

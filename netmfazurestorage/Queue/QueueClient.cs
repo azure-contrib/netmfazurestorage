@@ -116,8 +116,14 @@ namespace netmfazurestorage.Queue
                 return null;
 
             string retMessage = GetNodeValue(response.Body, "MessageText");
-            string popReceipt = GetNodeValue(response.Body, "PopReceipt");
             string messageId = GetNodeValue(response.Body, "MessageId");
+
+            string popReceipt = string.Empty;//this will remain empty if we are peeking
+
+            if (!peekOnly)
+            {
+                popReceipt = GetNodeValue(response.Body, "PopReceipt");
+            }
 
             string decoded = new string(Encoding.UTF8.GetChars(Convert.FromBase64String(retMessage)));
 
