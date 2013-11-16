@@ -21,7 +21,12 @@ namespace netmfazurestorage.Tests
             CreateQueue(testRun);
             CreateQueueMessage(testRun, "Skynet is READY");
             var peeked = PeekQueueMessage(testRun);
+            Debug.Print(peeked.MessageId);
+
             var message = RetrieveQueueMessage(testRun);
+            Debug.Print(message.MessageId);
+
+            Debug.Assert(peeked.MessageId == message.MessageId);
             DeleteQueueMessage(testRun, message.MessageId, message.PopReceipt);
             DeleteQueue(testRun);
         }
