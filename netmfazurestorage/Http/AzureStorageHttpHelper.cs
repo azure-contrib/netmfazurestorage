@@ -35,7 +35,8 @@ namespace netmfazurestorage.Http
                 using (response = (HttpWebResponse)request.GetResponse())
                 {
                     responseStatusCode = response.StatusCode;
-                    
+                    Debug.Print("HTTP " + ((int)responseStatusCode).ToString());
+
                     using (var responseStream = response.GetResponseStream())
                     using (var reader = new StreamReader(responseStream))
                     {
@@ -69,6 +70,9 @@ namespace netmfazurestorage.Http
                     Debug.Print("Problem with signature. Check next debug statement for stack");
                 }
             }
+
+            if (responseBody == null)
+                responseBody = "There was no body content";
 
             Debug.Print(responseBody);
             return new BasicHttpResponse() {Body = responseBody, StatusCode = responseStatusCode};
