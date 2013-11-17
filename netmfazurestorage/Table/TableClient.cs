@@ -45,7 +45,7 @@ namespace netmfazurestorage.Table
             additionalHeaders.Add("Content-Type", ContentType);
         }
 
-        public void CreateTable(string tableName)
+        public HttpStatusCode CreateTable(string tableName)
         {
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>" +
             "<entry xmlns:d=\"http://schemas.microsoft.com/ado/2007/08/dataservices\"  " +
@@ -62,7 +62,7 @@ namespace netmfazurestorage.Table
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
             string header = CreateAuthorizationHeader(payload, "/" + _account.AccountName + "/Tables()");
-            AzureStorageHttpHelper.SendWebRequest(_account.UriEndpoints["Table"] + "/Tables()", header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders);
+            return AzureStorageHttpHelper.SendWebRequest(_account.UriEndpoints["Table"] + "/Tables()", header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders).StatusCode;
         }
 
         [Obsolete("Please use the InsertTableEntity method; this AddTableEntityForTemperature method will be removed in a future release.", false)]
@@ -90,7 +90,7 @@ namespace netmfazurestorage.Table
             AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("{0}/{1}", _account.UriEndpoints["Table"], tablename), header, DateHeader, VersionHeader, payload, contentLength, "GET", false, this.additionalHeaders);
         }
 
-        public void InsertTableEntity(string tablename, string partitionKey, string rowKey, DateTime timeStamp, System.Collections.ArrayList tableEntityProperties)
+        public HttpStatusCode InsertTableEntity(string tablename, string partitionKey, string rowKey, DateTime timeStamp, System.Collections.ArrayList tableEntityProperties)
         {
             var timestamp = timeStamp.ToString("yyyy-MM-ddTHH:mm:ss.0000000Z");
 
@@ -110,10 +110,33 @@ namespace netmfazurestorage.Table
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
             string header = CreateAuthorizationHeader(payload, StringUtility.Format("/{0}/{1}", _account.AccountName, tablename));
-            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("{0}/{1}", _account.UriEndpoints["Table"], tablename), header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders);
+            return AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("{0}/{1}", _account.UriEndpoints["Table"], tablename), header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders).StatusCode;
         }
 
-        public void InsertTableEntity_Experimental(string tablename, string partitionKey, string rowKey, DateTime timeStamp, Hashtable tableEntityProperties)
+        public HttpStatusCode InsertTableEntity_Experimental(string tablename, string partitionKey, string rowKey, DateTime timeStamp, Hashtable tableEntityProperties)
+        {
+            var timestamp = timeStamp.ToString("yyyy-MM-ddTHH:mm:ss.0000000Z");
+
+            string xml =
+                StringUtility.Format("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?><entry xml:base=\"http://{0}.table.core.windows.net/\" xmlns:d=\"http://schemas.microsoft.com/ado/2007/08/dataservices\" xmlns:m=\"http://schemas.microsoft.com/ado/2007/08/dataservices/metadata\" m:etag=\"W/&quot;datetime'2008-09-18T23%3A46%3A19.4277424Z'&quot;\" xmlns=\"http://www.w3.org/2005/Atom\">" +
+                "<id>{6}/{5}(PartitionKey='{2}',RowKey='{3}')</id>" +
+                "<title/><updated>{1}</updated><author><name /></author>" +
+                "<link />" +
+                "<category term=\"{0}.Tables\" scheme=\"http://schemas.microsoft.com/ado/2007/08/dataservices/scheme\" />" +
+                "<content type=\"application/xml\"><m:properties><d:PartitionKey>{2}</d:PartitionKey><d:RowKey>{3}</d:RowKey>" +
+                "<d:Timestamp m:type=\"Edm.DateTime\">{1}</d:Timestamp>" +
+                "{4}" +
+                "</m:properties>" +
+                "</content>" +
+                "</entry>", _account.AccountName, timestamp, partitionKey, rowKey, GetTableXml(tableEntityProperties), tablename, _account.UriEndpoints["Table"]);
+
+            int contentLength = 0;
+            byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
+            string header = CreateAuthorizationHeader(payload, StringUtility.Format("/{0}/{1}", _account.AccountName, tablename));
+            return AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("{0}/{1}", _account.UriEndpoints["Table"], tablename), header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders).StatusCode;
+        }
+
+        public HttpStatusCode UpdateTableEntity(string tablename, string partitionKey, string rowKey, DateTime timeStamp, Hashtable tableEntityProperties)
         {
             var timestamp = timeStamp.ToString("yyyy-MM-ddTHH:mm:ss.0000000Z");
 
@@ -132,8 +155,8 @@ namespace netmfazurestorage.Table
 
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
-            string header = CreateAuthorizationHeader(payload, StringUtility.Format("/{0}/{1}", _account.AccountName, tablename));
-            AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("{0}/{1}", _account.UriEndpoints["Table"], tablename), header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders);
+            string header = CreateAuthorizationHeader(payload, StringUtility.Format("/{0}/{1}(PartitionKey='{2}',RowKey='{3}')", _account.AccountName, tablename, partitionKey, rowKey));
+            return AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("{0}/{1}(PartitionKey='{2}',RowKey='{3}')", _account.UriEndpoints["Table"], tablename, partitionKey, rowKey), header, DateHeader, VersionHeader, payload, contentLength, "PUT", false, this.additionalHeaders).StatusCode;
         }
 
         private string GetTableXml(ArrayList tableEntityProperties)
