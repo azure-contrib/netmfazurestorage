@@ -90,7 +90,7 @@ namespace netmfazurestorage.Tests
             values.Add("doublefield", (double)123.22);
             values.Add("int64field", (Int64)64);
             values.Add("boolfield", true);
-            var code = this.client.InsertTableEntity_Experimental("netmftest", "2", Guid.NewGuid().ToString(), DateTime.Now, values);
+            var code = this.client.InsertTableEntity("netmftest", "2", Guid.NewGuid().ToString(), DateTime.Now, values);
             Debug.Assert(code == System.Net.HttpStatusCode.Created);
         }
 
@@ -118,7 +118,7 @@ namespace netmfazurestorage.Tests
             values.Add("doublefield", (double)123.22);
             values.Add("int64field", (Int64)64);
             values.Add("boolfield", true);
-            var code1 = this.client.InsertTableEntity_Experimental("netmftest", "3", rowKey.ToString(), DateTime.Now, values);
+            var code1 = this.client.InsertTableEntity("netmftest", "3", rowKey.ToString(), DateTime.Now, values);
 
             values["stringfield"] = "updated string";
             var code2 = this.client.UpdateTableEntity("netmftest", "3", rowKey.ToString(), DateTime.Now, values);

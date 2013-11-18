@@ -113,7 +113,7 @@ namespace netmfazurestorage.Table
             return AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("{0}/{1}", _account.UriEndpoints["Table"], tablename), header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders).StatusCode;
         }
 
-        public HttpStatusCode InsertTableEntity_Experimental(string tablename, string partitionKey, string rowKey, DateTime timeStamp, Hashtable tableEntityProperties)
+        public HttpStatusCode InsertTableEntity(string tablename, string partitionKey, string rowKey, DateTime timeStamp, Hashtable tableEntityProperties)
         {
             var timestamp = timeStamp.ToString("yyyy-MM-ddTHH:mm:ss.0000000Z");
 
