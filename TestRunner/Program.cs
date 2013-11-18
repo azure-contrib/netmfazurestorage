@@ -1,19 +1,6 @@
-﻿using System;
-using System.IO;
-using System.Net;
-using System.Text;
-using System.Threading;
-using Microsoft.SPOT;
-using Microsoft.SPOT.Hardware;
-using Microsoft.SPOT.Net.NetworkInformation;
-using NetMf.CommonExtensions;
-using netmfazurestorage.Account;
-using netmfazurestorage.Blob;
-using netmfazurestorage.NTP;
-using netmfazurestorage.Table;
-using netmfazurestorage.Tests;
+﻿using netmfazurestorage.Tests;
 
-namespace netmfazurestorage
+namespace netmfazurestorage.TestRunner
 {
     public class Program
     {
