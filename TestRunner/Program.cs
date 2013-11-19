@@ -1,4 +1,6 @@
-﻿using netmfazurestorage.Tests;
+﻿using Microsoft.SPOT;
+using Microsoft.SPOT.Net.NetworkInformation;
+using netmfazurestorage.Tests;
 
 namespace netmfazurestorage.TestRunner
 {
@@ -9,6 +11,17 @@ namespace netmfazurestorage.TestRunner
 
         public static void Main()
         {
+            NetworkInterface networkInterface = NetworkInterface.GetAllNetworkInterfaces()[0];
+
+            if (!networkInterface.IsDhcpEnabled || !networkInterface.IsDynamicDnsEnabled)
+            {
+                networkInterface.EnableDhcp();
+                networkInterface.EnableDynamicDns();
+                networkInterface.RenewDhcpLease();
+                
+                Debug.Print("Interface set to " + networkInterface.IPAddress);
+            }
+
             var queueTests = new QueueTests(AccountName, AccountKey);
             queueTests.Run();
 
