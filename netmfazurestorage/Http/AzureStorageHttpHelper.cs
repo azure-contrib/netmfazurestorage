@@ -112,6 +112,11 @@ namespace netmfazurestorage.Http
                 }
             }
 
+            if (AttachFiddler)
+            {
+                request.Proxy = new WebProxy("127.0.0.1", 8888);
+            }
+
             if (contentLength != 0)
             {
                 request.GetRequestStream().Write(fileBytes, 0, fileBytes.Length);
@@ -119,6 +124,7 @@ namespace netmfazurestorage.Http
             return request;
         }
 
+        public static bool AttachFiddler { get; set; }
     }
 
 }

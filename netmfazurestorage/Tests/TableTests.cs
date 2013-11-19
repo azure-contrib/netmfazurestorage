@@ -1,5 +1,6 @@
 using System;
 using netmfazurestorage.Account;
+using netmfazurestorage.Http;
 using netmfazurestorage.Table;
 using System.Collections;
 using Microsoft.SPOT;
@@ -17,6 +18,8 @@ namespace netmfazurestorage.Tests
 
         public void Run()
         {
+            AzureStorageHttpHelper.AttachFiddler = true;
+
             this.TestCreate();
             this.TestInsert();
             this.TestInsertDouble();
