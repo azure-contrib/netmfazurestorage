@@ -53,7 +53,7 @@ namespace netmfazurestorage.Http
                     }
                     if (response.StatusCode == HttpStatusCode.Forbidden)
                     {
-                        throw new WebException("Forbidden", null, WebExceptionStatus.ServerProtocolViolation, response);
+                        throw new WebException("Forbidden", null, WebExceptionStatus.TrustFailure, response);
                     }
 
                     
