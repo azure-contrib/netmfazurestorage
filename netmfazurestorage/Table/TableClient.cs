@@ -14,7 +14,6 @@ namespace netmfazurestorage.Table
     public class TableClient
     {
         private readonly CloudStorageAccount _account;
-        public static bool AttachFiddler;
         internal const string VersionHeader = "2011-08-18";
         internal const string ContentType = "application/atom+xml";
         private string DateHeader { get; set; }
