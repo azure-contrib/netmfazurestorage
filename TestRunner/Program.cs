@@ -1,5 +1,8 @@
-﻿using Microsoft.SPOT;
+﻿using System;
+using Microsoft.SPOT;
+using Microsoft.SPOT.Hardware;
 using Microsoft.SPOT.Net.NetworkInformation;
+using netmfazurestorage.NTP;
 using netmfazurestorage.Tests;
 
 namespace netmfazurestorage.TestRunner
@@ -20,6 +23,12 @@ namespace netmfazurestorage.TestRunner
                 networkInterface.RenewDhcpLease();
                 
                 Debug.Print("Interface set to " + networkInterface.IPAddress);
+            }
+
+            if (DateTime.Now < new DateTime(2012, 01, 01))
+            {
+                var networkTime = NtpClient.GetNetworkTime();
+                Utility.SetLocalTime(networkTime);
             }
 
             var queueTests = new QueueTests(AccountName, AccountKey);
