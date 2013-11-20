@@ -38,7 +38,7 @@ namespace netmfazurestorage.Table
             additionalHeaders.Add("Content-Type", ContentType);
         }
 
-        public HttpStatusCode CreateTable(string tableName)
+        public BasicHttpResponse CreateTable(string tableName)
         {
             string xml = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>" +
             "<entry xmlns:d=\"http://schemas.microsoft.com/ado/2007/08/dataservices\"  " +
@@ -55,11 +55,11 @@ namespace netmfazurestorage.Table
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
             string header = CreateAuthorizationHeader(payload, "/" + _account.AccountName + "/Tables()");
-            return AzureStorageHttpHelper.SendWebRequest(_account.UriEndpoints["Table"] + "/Tables()", header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders).StatusCode;
+            return AzureStorageHttpHelper.SendWebRequest(_account.UriEndpoints["Table"] + "/Tables()", header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders);
         }
 
 
-        public HttpStatusCode InsertTableEntity(string tablename, string partitionKey, string rowKey, DateTime timeStamp, System.Collections.ArrayList tableEntityProperties)
+        public BasicHttpResponse InsertTableEntity(string tablename, string partitionKey, string rowKey, DateTime timeStamp, System.Collections.ArrayList tableEntityProperties)
         {
             var timestamp = timeStamp.ToString("yyyy-MM-ddTHH:mm:ss.0000000Z");
 
@@ -79,7 +79,7 @@ namespace netmfazurestorage.Table
             int contentLength = 0;
             byte[] payload = GetBodyBytesAndLength(xml, out contentLength);
             string header = CreateAuthorizationHeader(payload, StringUtility.Format("/{0}/{1}", _account.AccountName, tablename));
-            return AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("{0}/{1}", _account.UriEndpoints["Table"], tablename), header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders).StatusCode;
+            return AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("{0}/{1}", _account.UriEndpoints["Table"], tablename), header, DateHeader, VersionHeader, payload, contentLength, "POST", false, this.additionalHeaders);
         }
 
         public HttpStatusCode InsertTableEntity(string tablename, string partitionKey, string rowKey, DateTime timeStamp, Hashtable tableEntityProperties)

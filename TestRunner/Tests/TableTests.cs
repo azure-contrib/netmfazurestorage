@@ -53,7 +53,7 @@ namespace netmfazurestorage.Tests
             values.Add(tep);
 
             var code = this.client.InsertTableEntity("ranetmftest", "1", Guid.NewGuid().ToString(), DateTime.UtcNow, values);
-            Debug.Assert(HttpStatusCode.Created == code);
+            Debug.Assert(HttpStatusCode.Created == code.StatusCode);
         }
 
         public void TestInsertDouble()
@@ -79,7 +79,7 @@ namespace netmfazurestorage.Tests
             values.Add(tep);
 
             var code = this.client.InsertTableEntity("ranetmftest", "1", Guid.NewGuid().ToString(), DateTime.Now, values);
-            Debug.Assert(HttpStatusCode.Created == code);
+            Debug.Assert(HttpStatusCode.Created == code.StatusCode);
         }
 
 
