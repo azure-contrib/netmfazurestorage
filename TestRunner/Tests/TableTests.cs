@@ -19,7 +19,7 @@ namespace netmfazurestorage.Tests
 
         public void Run()
         {
-            AzureStorageHttpHelper.AttachFiddler = true;
+            AzureStorageHttpHelper.AttachFiddler = false;
 
             this.TestCreate();
             this.TestInsert();
@@ -28,6 +28,7 @@ namespace netmfazurestorage.Tests
             this.QuerySingleEntity();
             this.QueryMultipleEntities();
             this.UpdateTableEntity();
+            this.DeleteTableEntity();
         }
 
         private void TestCreate()
@@ -125,6 +126,16 @@ namespace netmfazurestorage.Tests
 
             values["stringfield"] = "updated string";
             var code2 = this.client.UpdateTableEntity("ranetmftest", "3", rowKey.ToString(), DateTime.Now, values);
+        }
+
+        private void DeleteTableEntity()
+        {
+            var rowKey = Guid.NewGuid();
+            var values = new Hashtable();
+            var code1 = this.client.InsertTableEntity("ranetmftest", "4", rowKey.ToString(), DateTime.Now, values);
+
+            var code2 = this.client.DeleteTableEntity("ranetmftest", "4", rowKey.ToString());
+            Debug.Assert(code2 == HttpStatusCode.NoContent);
         }
 
     }
