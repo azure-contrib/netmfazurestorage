@@ -22,9 +22,22 @@ namespace netmfazurestorage.Tests
             AzureStorageHttpHelper.AttachFiddler = true;
 
             this.TestCreate();
+
+            var startTime = DateTime.Now;
             this.TestInsert();
+            var completeTime = DateTime.Now;
+            Debug.Print("Original Time = " + (completeTime - startTime).ToString());
+
+            startTime = DateTime.Now;
             this.TestInsertDouble();
+            completeTime = DateTime.Now;
+            Debug.Print("Double Time = " + (completeTime - startTime).ToString());
+
+            startTime = DateTime.Now;
             this.TestInsertExperimental();
+            completeTime = DateTime.Now;
+            Debug.Print("Experimental Time = " + (completeTime - startTime).ToString());
+
             this.QuerySingleEntity();
             this.QueryMultipleEntities();
             this.UpdateTableEntity();

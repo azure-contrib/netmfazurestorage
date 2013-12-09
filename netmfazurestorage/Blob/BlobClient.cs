@@ -11,18 +11,18 @@ using netmfazurestorage.Http;
 
 namespace netmfazurestorage.Blob
 {
-    internal class BlobClient
+    public class BlobClient
     {
         private readonly CloudStorageAccount _account;
 
-        internal BlobClient(CloudStorageAccount account)
+        public BlobClient(CloudStorageAccount account)
         {
             _account = account;
             HttpVerb = "PUT";
             DateHeader = DateTime.Now.ToString("R");
         }
 
-        internal bool PutBlockBlob(string containerName, string blobName, string fileNamePath)
+        public bool PutBlockBlob(string containerName, string blobName, string fileNamePath)
         {
             try
             {

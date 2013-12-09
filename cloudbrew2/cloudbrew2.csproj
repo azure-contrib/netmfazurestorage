@@ -1,17 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <AssemblyName>netmfazurestorage</AssemblyName>
-    <OutputType>Library</OutputType>
-    <RootNamespace>netmfazurestorage</RootNamespace>
+    <AssemblyName>cloudbrew2</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>cloudbrew2</RootNamespace>
     <ProjectTypeGuids>{b69e3092-b931-443c-abe7-7e7b65f2a37f};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{1662719F-BF15-4E0A-B4FA-86F29D4B078D}</ProjectGuid>
+    <ProjectGuid>{BEC8B86E-FCDC-4F1C-9572-D89597F06B76}</ProjectGuid>
     <TargetFrameworkVersion>v4.2</TargetFrameworkVersion>
     <NetMfTargetsBaseDir Condition="'$(NetMfTargetsBaseDir)'==''">$(MSBuildExtensionsPath32)\Microsoft\.NET Micro Framework\</NetMfTargetsBaseDir>
-    <DeployDevice>NetduinoPlus</DeployDevice>
-    <DeployTransport>USB</DeployTransport>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,37 +28,34 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject>
-    </StartupObject>
-  </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
-    <Compile Include="Account\CloudStorageAccount.cs" />
-    <Compile Include="Blob\BlobClient.cs" />
-    <Compile Include="Helper\DeviceAssist.cs" />
-    <Compile Include="HMAC\SHA.cs" />
-    <Compile Include="Http\BasicHttpResponse.cs" />
-    <Compile Include="Http\AzureStorageHttpHelper.cs" />
-    <Compile Include="NTP\NtpClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Queue\QueueClient.cs" />
-    <Compile Include="Queue\QueueMessageWrapper.cs" />
-    <Compile Include="StringUtilities\ExtensionAttribute.cs" />
-    <Compile Include="StringUtilities\FormatException.cs" />
-    <Compile Include="StringUtilities\Parse.cs" />
-    <Compile Include="StringUtilities\StringBuilder.cs" />
-    <Compile Include="StringUtilities\StringExtensions.cs" />
-    <Compile Include="StringUtilities\StringUtility.cs" />
-    <Compile Include="Table\TableClient.cs" />
-    <Compile Include="Table\TableEntityProperty.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.SPOT.Hardware" />
-    <Reference Include="Microsoft.SPOT.Native" />
-    <Reference Include="Microsoft.SPOT.Net" />
-    <Reference Include="System" />
-    <Reference Include="System.Http" />
+    <Reference Include="Microsoft.SPOT.Native">
+    </Reference>
+    <Reference Include="SecretLabs.NETMF.Hardware.NetduinoPlus, Version=4.2.2.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="System.IO" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources.resx">
+      <SubType>Designer</SubType>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\netmfazurestorage\netmfazurestorage.csproj">
+      <Project>{1662719F-BF15-4E0A-B4FA-86F29D4B078D}</Project>
+      <Name>netmfazurestorage</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>
