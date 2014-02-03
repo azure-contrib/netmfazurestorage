@@ -14,7 +14,7 @@ namespace netmfazurestorage.TestRunner
 
         public static void Main()
         {
-            NetworkInterface networkInterface = NetworkInterface.GetAllNetworkInterfaces()[0];
+            var networkInterface = NetworkInterface.GetAllNetworkInterfaces()[0];
 
             if (!networkInterface.IsDhcpEnabled || !networkInterface.IsDynamicDnsEnabled)
             {

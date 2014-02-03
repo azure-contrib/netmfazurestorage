@@ -48,5 +48,11 @@ var entity = client.QueryTable("helloworld", "PK", "RK");
 Or you can pass in an OData query, and get an array of Hashtables back:
 
 ```cs
-var entities = client.QueryTable("netmftest", "PartitionKey eq '2'");
+var entities = client.QueryTable("helloworld", "PartitionKey eq 'PK'");
+```
+
+Delete an entity:
+
+```cs
+client.DeleteTableEntity("helloworld", "PK", "RK");
 ```

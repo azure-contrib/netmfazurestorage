@@ -100,6 +100,18 @@ namespace netmfazurestorage.Table
             return AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("{0}/{1}(PartitionKey='{2}',RowKey='{3}')", _account.UriEndpoints["Table"], tablename, partitionKey, rowKey), header, DateHeader, VersionHeader, payload, contentLength, "PUT", false, this.additionalHeaders).StatusCode;
         }
 
+        public HttpStatusCode DeleteTableEntity(string tablename, string partitionKey, string rowKey)
+        {
+            var header = CreateAuthorizationHeader(null, StringUtility.Format("/{0}/{1}(PartitionKey='{2}',RowKey='{3}')", _account.AccountName, tablename, partitionKey, rowKey));
+            Hashtable headers = new Hashtable();
+            foreach (var key in this.additionalHeaders.Keys)
+            {
+                headers.Add(key, this.additionalHeaders[key]);
+            }
+            headers.Add("If-Match", "*");
+            return AzureStorageHttpHelper.SendWebRequest(StringUtility.Format("{0}/{1}(PartitionKey='{2}',RowKey='{3}')", _account.UriEndpoints["Table"], tablename, partitionKey, rowKey), header, DateHeader, VersionHeader, null, 0, "DELETE", false, headers).StatusCode;
+        }
+
         private string FormatEntityXml(string tablename, string partitionKey, string rowKey, DateTime timeStamp, Hashtable tableEntityProperties)
         {
             var timestamp = timeStamp.ToString("yyyy-MM-ddTHH:mm:ss.0000000Z");
@@ -281,6 +293,8 @@ namespace netmfazurestorage.Table
         }
 
         #endregion
+
+
     }
 
 
