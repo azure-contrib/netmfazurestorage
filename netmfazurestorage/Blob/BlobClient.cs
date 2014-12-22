@@ -40,7 +40,7 @@ namespace netmfazurestorage.Blob
                 {
                     var blobTypeHeaders = new Hashtable();
                     blobTypeHeaders.Add("x-ms-blob-type", "BlockBlob");
-                    var response = AzureStorageHttpHelper.SendWebRequest(deploymentPath, authHeader, DateHeader, VersionHeader, ms, contentLength, "GET", true, blobTypeHeaders);
+                    var response = AzureStorageHttpHelper.SendWebRequest(deploymentPath, authHeader, DateHeader, VersionHeader, ms, contentLength, "PUT", true, blobTypeHeaders);
                     if (response.StatusCode != HttpStatusCode.Accepted)
                     {
                         Debug.Print("Deployment Path was " + deploymentPath);
@@ -68,6 +68,59 @@ namespace netmfazurestorage.Blob
                 return false;
             }
             catch(Exception ex)
+            {
+                Debug.Print(ex.ToString());
+                return false;
+            }
+
+            return true;
+        }
+
+        public bool PutBlockBlob(string containerName, string blobName, Byte[] ms)
+        {
+            try
+            {
+                string deploymentPath =
+                    StringUtility.Format("{0}/{1}/{2}", _account.UriEndpoints["Blob"], containerName,
+                                         blobName);
+                int contentLength = ms.Length;
+
+                string canResource = StringUtility.Format("/{0}/{1}/{2}", _account.AccountName, containerName, blobName);
+
+                string authHeader = CreateAuthorizationHeader(canResource, "\nx-ms-blob-type:BlockBlob", contentLength);
+
+                try
+                {
+                    var blobTypeHeaders = new Hashtable();
+                    blobTypeHeaders.Add("x-ms-blob-type", "BlockBlob");
+                    var response = AzureStorageHttpHelper.SendWebRequest(deploymentPath, authHeader, DateHeader, VersionHeader, ms, contentLength, "PUT", true, blobTypeHeaders);
+                    if (response.StatusCode != HttpStatusCode.Accepted)
+                    {
+                        Debug.Print("Deployment Path was " + deploymentPath);
+                        Debug.Print("Auth Header was " + authHeader);
+                        Debug.Print("Ms was " + ms.Length);
+                        Debug.Print("Length was " + contentLength);
+                    }
+                    else
+                    {
+                        Debug.Print("Success");
+                        Debug.Print("Auth Header was " + authHeader);
+                    }
+
+                    return response.StatusCode == HttpStatusCode.Accepted;
+                }
+                catch (WebException wex)
+                {
+                    Debug.Print(wex.ToString());
+                    return false;
+                }
+            }
+            catch (IOException ex)
+            {
+                Debug.Print(ex.ToString());
+                return false;
+            }
+            catch (Exception ex)
             {
                 Debug.Print(ex.ToString());
                 return false;
