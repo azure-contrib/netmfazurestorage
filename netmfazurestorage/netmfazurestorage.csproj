@@ -8,7 +8,7 @@
     <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{1662719F-BF15-4E0A-B4FA-86F29D4B078D}</ProjectGuid>
-    <TargetFrameworkVersion>v4.3</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.2</TargetFrameworkVersion>
     <NetMfTargetsBaseDir Condition="'$(NetMfTargetsBaseDir)'==''">$(MSBuildExtensionsPath32)\Microsoft\.NET Micro Framework\</NetMfTargetsBaseDir>
     <DeployDevice>NetduinoPlus</DeployDevice>
     <DeployTransport>USB</DeployTransport>
