@@ -18,7 +18,6 @@ namespace netmfazurestorage.Blob
         public BlobClient(CloudStorageAccount account)
         {
             _account = account;
-            HttpVerb = "PUT";
             DateHeader = DateTime.Now.ToString("R");
         }
 
@@ -30,18 +29,21 @@ namespace netmfazurestorage.Blob
                     StringUtility.Format("{0}/{1}/{2}", _account.UriEndpoints["Blob"], containerName,
                                          blobName);
                 int contentLength;
+
+                HttpVerb = "PUT";
+
                 byte[] ms = GetPackageFileBytesAndLength(fileNamePath, out contentLength);
 
                 string canResource = StringUtility.Format("/{0}/{1}/{2}", _account.AccountName, containerName, blobName);
 
-                string authHeader = CreateAuthorizationHeader(canResource, "\nx-ms-blob-type:BlockBlob", contentLength);
+                string authHeader = CreateAuthorizationHeader(canResource, options: "\nx-ms-blob-type:BlockBlob", contentLength: contentLength);
 
                 try
                 {
                     var blobTypeHeaders = new Hashtable();
                     blobTypeHeaders.Add("x-ms-blob-type", "BlockBlob");
-                    var response = AzureStorageHttpHelper.SendWebRequest(deploymentPath, authHeader, DateHeader, VersionHeader, ms, contentLength, "PUT", true, blobTypeHeaders);
-                    if (response.StatusCode != HttpStatusCode.Accepted)
+                    var response = AzureStorageHttpHelper.SendWebRequest(deploymentPath, authHeader, DateHeader, VersionHeader, ms, contentLength, HttpVerb, true, blobTypeHeaders);
+                    if (response.StatusCode != HttpStatusCode.Created)
                     {
                         Debug.Print("Deployment Path was " + deploymentPath);
                         Debug.Print("Auth Header was " + authHeader);
@@ -54,7 +56,7 @@ namespace netmfazurestorage.Blob
                         Debug.Print("Auth Header was " + authHeader);
                     }
 
-                    return response.StatusCode == HttpStatusCode.Accepted;
+                    return response.StatusCode == HttpStatusCode.Created;
                 }
                 catch (WebException wex)
                 {
@@ -85,21 +87,74 @@ namespace netmfazurestorage.Blob
                                          blobName);
                 int contentLength = ms.Length;
 
+                HttpVerb = "PUT";
+
                 string canResource = StringUtility.Format("/{0}/{1}/{2}", _account.AccountName, containerName, blobName);
 
-                string authHeader = CreateAuthorizationHeader(canResource, "\nx-ms-blob-type:BlockBlob", contentLength);
+                string authHeader = CreateAuthorizationHeader(canResource, options: "\nx-ms-blob-type:BlockBlob", contentLength: contentLength);
 
                 try
                 {
                     var blobTypeHeaders = new Hashtable();
                     blobTypeHeaders.Add("x-ms-blob-type", "BlockBlob");
-                    var response = AzureStorageHttpHelper.SendWebRequest(deploymentPath, authHeader, DateHeader, VersionHeader, ms, contentLength, "PUT", true, blobTypeHeaders);
-                    if (response.StatusCode != HttpStatusCode.Accepted)
+                    var response = AzureStorageHttpHelper.SendWebRequest(deploymentPath, authHeader, DateHeader, VersionHeader, ms, contentLength, HttpVerb, true, blobTypeHeaders);
+                    if (response.StatusCode != HttpStatusCode.Created)
                     {
                         Debug.Print("Deployment Path was " + deploymentPath);
                         Debug.Print("Auth Header was " + authHeader);
                         Debug.Print("Ms was " + ms.Length);
                         Debug.Print("Length was " + contentLength);
+                    }
+                    else
+                    {
+                        Debug.Print("Success");
+                        Debug.Print("Auth Header was " + authHeader);
+                    }
+
+                    return response.StatusCode == HttpStatusCode.Created;
+                }
+                catch (WebException wex)
+                {
+                    Debug.Print(wex.ToString());
+                    return false;
+                }
+            }
+            catch (IOException ex)
+            {
+                Debug.Print(ex.ToString());
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.Print(ex.ToString());
+                return false;
+            }
+
+            return true;
+        }
+
+        public bool DeleteBlob(string containerName, string blobName)
+        {
+            try
+            {
+                string deploymentPath =
+                    StringUtility.Format("{0}/{1}/{2}", _account.UriEndpoints["Blob"], containerName,
+                                         blobName);
+
+                HttpVerb = "DELETE";
+
+                string canResource = StringUtility.Format("/{0}/{1}/{2}", _account.AccountName, containerName, blobName);
+
+                string authHeader = CreateAuthorizationHeader(canResource);
+
+                try
+                {
+                    var response = AzureStorageHttpHelper.SendWebRequest(deploymentPath, authHeader, DateHeader, VersionHeader, null, 0, HttpVerb, true);
+                    if (response.StatusCode != HttpStatusCode.Accepted)
+                    {
+                        Debug.Print("Deployment Path was " + deploymentPath);
+                        Debug.Print("Auth Header was " + authHeader);
+                        Debug.Print("Error Status Code: " + response.StatusCode);
                     }
                     else
                     {
@@ -125,8 +180,104 @@ namespace netmfazurestorage.Blob
                 Debug.Print(ex.ToString());
                 return false;
             }
+        }
 
-            return true;
+        public bool CreateContainer(string containerName)
+        {
+            try
+            {
+                string deploymentPath =
+                    StringUtility.Format("{0}/{1}?{2}", _account.UriEndpoints["Blob"], containerName, ContainerString);
+
+                HttpVerb = "PUT";
+
+                string canResource = StringUtility.Format("/{0}/{1}\nrestype:container", _account.AccountName,
+                    containerName);
+
+                string authHeader = CreateAuthorizationHeader(canResource);
+
+                try
+                {
+                    var response = AzureStorageHttpHelper.SendWebRequest(deploymentPath, authHeader, DateHeader, VersionHeader, null, 0, HttpVerb, true);
+                    if (response.StatusCode != HttpStatusCode.Created)
+                    {
+                        Debug.Print("Deployment Path was " + deploymentPath);
+                        Debug.Print("Auth Header was " + authHeader);
+                        Debug.Print("Error Status Code: " + response.StatusCode);
+                    }
+                    else
+                    {
+                        Debug.Print("Success");
+                        Debug.Print("Auth Header was " + authHeader);
+                    }
+
+                    return response.StatusCode == HttpStatusCode.Created;
+                }
+                catch (WebException wex)
+                {
+                    Debug.Print(wex.ToString());
+                    return false;
+                }
+            }
+            catch (IOException ex)
+            {
+                Debug.Print(ex.ToString());
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.Print(ex.ToString());
+                return false;
+            }
+        }
+
+        public bool DeleteContainer(string containerName)
+        {
+            try
+            {
+                string deploymentPath =
+                    StringUtility.Format("{0}/{1}?{2}", _account.UriEndpoints["Blob"], containerName, ContainerString);
+
+                HttpVerb = "DELETE";
+
+                string canResource = StringUtility.Format("/{0}/{1}\nrestype:container", _account.AccountName,
+                    containerName);
+
+                string authHeader = CreateAuthorizationHeader(canResource);
+
+                try
+                {
+                    var response = AzureStorageHttpHelper.SendWebRequest(deploymentPath, authHeader, DateHeader, VersionHeader, null, 0, HttpVerb, true);
+                    if (response.StatusCode != HttpStatusCode.Accepted)
+                    {
+                        Debug.Print("Deployment Path was " + deploymentPath);
+                        Debug.Print("Auth Header was " + authHeader);
+                        Debug.Print("Error Status Code: " + response.StatusCode);
+                    }
+                    else
+                    {
+                        Debug.Print("Success");
+                        Debug.Print("Auth Header was " + authHeader);
+                    }
+
+                    return response.StatusCode == HttpStatusCode.Accepted;
+                }
+                catch (WebException wex)
+                {
+                    Debug.Print(wex.ToString());
+                    return false;
+                }
+            }
+            catch (IOException ex)
+            {
+                Debug.Print(ex.ToString());
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.Print(ex.ToString());
+                return false;
+            }
         }
 
         protected byte[] GetPackageFileBytesAndLength(string fileName, out int contentLength)
@@ -145,20 +296,21 @@ namespace netmfazurestorage.Blob
             return ms;
         }
 
-        protected string CreateAuthorizationHeader(String canResource, string options = "", int contentLength = 0)
+        protected string CreateAuthorizationHeader(string canResource, string options = "", int contentLength = 0)
         {
             string toSign = StringUtility.Format("{0}\n\n\n{1}\n\n\n\n\n\n\n\n{5}\nx-ms-date:{2}\nx-ms-version:{3}\n{4}",
                                           HttpVerb, contentLength, DateHeader, VersionHeader, canResource, options);
 
-            string signature;
-
             var hmacBytes = SHA.computeHMAC_SHA256(Convert.FromBase64String(_account.AccountKey), Encoding.UTF8.GetBytes(toSign));
-            signature = Convert.ToBase64String(hmacBytes).Replace("!", "+").Replace("*", "/");;
+            string signature = Convert.ToBase64String(hmacBytes).Replace("!", "+").Replace("*", "/");;
            
             return "SharedKey " + _account.AccountName + ":" + signature;
         }
 
+
         internal const string VersionHeader = "2011-08-18";
+
+        private const string ContainerString = "restype=container";
 
         protected string DateHeader { get; set; }
 
