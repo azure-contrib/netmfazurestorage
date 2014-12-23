@@ -36,7 +36,7 @@ namespace netmfazurestorage.Blob
 
                 string canResource = StringUtility.Format("/{0}/{1}/{2}", _account.AccountName, containerName, blobName);
 
-                string authHeader = CreateAuthorizationHeader(canResource, options: "\nx-ms-blob-type:BlockBlob", contentLength: contentLength);
+                string authHeader = CreateAuthorizationHeader(canResource, "\nx-ms-blob-type:BlockBlob", contentLength);
 
                 try
                 {
@@ -91,7 +91,7 @@ namespace netmfazurestorage.Blob
 
                 string canResource = StringUtility.Format("/{0}/{1}/{2}", _account.AccountName, containerName, blobName);
 
-                string authHeader = CreateAuthorizationHeader(canResource, options: "\nx-ms-blob-type:BlockBlob", contentLength: contentLength);
+                string authHeader = CreateAuthorizationHeader(canResource, "\nx-ms-blob-type:BlockBlob", contentLength);
 
                 try
                 {
