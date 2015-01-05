@@ -4,6 +4,7 @@ using Microsoft.SPOT.Hardware;
 using Microsoft.SPOT.Net.NetworkInformation;
 using netmfazurestorage.NTP;
 using netmfazurestorage.Tests;
+using TestRunner.Tests;
 
 namespace netmfazurestorage.TestRunner
 {
@@ -36,6 +37,9 @@ namespace netmfazurestorage.TestRunner
 
             var tableTests = new TableTests(AccountName, AccountKey);
             tableTests.Run();
+
+            var blobTests = new BlobTests(AccountName, AccountKey);
+            blobTests.Run();
         }
     }
 }
